@@ -6,6 +6,7 @@
 #include <DirectXMath.h>
 
 namespace wrl = Microsoft::WRL;
+//DirectxMath 네임스페이스
 namespace dx = DirectX;
 
 
@@ -124,9 +125,17 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	pContext->ClearRenderTargetView(pTarget.Get(), color);
 }
 
- void Graphics::DrawTestTrangle(float angle)
+ void Graphics::DrawTestTrangle(float angle,float x,float y)
 {
-	namespace wrl = Microsoft::WRL;
+	 //XM이 붙은 자료형이나 함수들은 SIMD에 최적화되어진 변수들이다.
+	 //기존의 D3DXVECTOR 과 다르게 SIMD에 최적화되어 직접접근을 할수 없으며 인터페이스를통한 접근만이 가능하다
+	 dx::XMVECTOR v = dx::XMVectorSet(3.0f, 3.0f, 0.0f, 0.0f);	
+	 auto result = dx::XMVector4Dot(v, v);// XMVECTOR로 내적을 수행하는것으로 용도에따라 두원소만 내적하고싶으면 XMVector2Dot을 호출하면된다.
+										  // 다만 XMVectorDot 함수는 SIMD최적화로 스칼라값이아닌 벡터를 산출하게된다 왜냐하면 SIMD에서 하나의 값을 산출하는것이 더 비효율적이라 4개의 같은 값을 가진 
+										  // 벡터를 산출한다.
+	 auto xx = dx::XMVectorGetX(result);	  // 이런식으로 각각의 원소에 접근하는함수를 호출해야한다.
+
+	 auto result2 = dx::XMVector3Transform(v, dx::XMMatrixScaling(1.5, 0.0f, 0.0f));	//벡터와 행렬사이의 연산이다.
 	HRESULT hr = 0;
 	//버퍼 변수.
 	wrl::ComPtr<ID3D11Buffer> pVertexBuffer;
@@ -214,18 +223,17 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	//변환행렬을 위한 상수버퍼를 만든다
 	struct ConstantBuffer
 	{
-		struct
-		{
-			float element[4][4];
-		}transformation;
+		dx::XMMATRIX transform;		//4x4 float 행렬 SIMD 최적화가 이루어져있기 때문에 직접적으로 원소에 접근할 수 없다.
+									//인터페이스를 통한 접근함수를 사용해야한다.
 	};
 	const ConstantBuffer cb =
 	{
 		{
-			(3.0f / 4.0f)*std::cos(angle), std::sin(angle),0.0f,0.0f,
-			(3.0f / 4.0f) * -std::sin(angle), std::cos(angle),0.0f,0.0f,
-			0.0f,			 0.0f,			 1.0f,0.0f,
-			0.0f,			 0.0f,			 0.0f,1.0f,
+				dx::XMMatrixTranspose(							//HLSL에서는 기본적으로 들어오는 행렬은 열위주로 여긴다 row_major 키워드로 행위주로 바꿀수는있지만 조금 느리게 만든다
+				dx::XMMatrixRotationZ(angle)*					//그러므로 GPU상에서 해당 연산을 지우기위해 (최적화) 응용프로그램에서 해당 행렬을 전치하여 열위주로 바꾸면 된다. (CPU상에서의 전치는 빠른 연산이므로 GPU상에서보다 더 이득이 있다)
+				dx::XMMatrixScaling(3.0f/4.0f,1.0f,1.0f)*		//Multiply 함수는 C스타일이지만 * 연산자를 오버로딩 했으므로 그냥 곱하기해도된다.
+				dx::XMMatrixTranslation(x,y,0.0f)
+				)
 		}
 	};
 

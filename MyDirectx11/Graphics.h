@@ -53,7 +53,7 @@ public:
 
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
-	void DrawTestTrangle(float angle);
+	void DrawTestTrangle(float angle,float x,float y);
 private:
 #ifndef NDEBUG			//디버그모드에서만 인포매니저를 사용한다.
 	DxgiInfoManager infoManager;
