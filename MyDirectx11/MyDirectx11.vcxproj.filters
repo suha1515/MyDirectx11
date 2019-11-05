@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="99.Headers">
+      <UniqueIdentifier>{23330960-81c3-4749-b69b-a7621ffd5993}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00.Device">
+      <UniqueIdentifier>{62638b59-0c02-4699-aed9-965997b55650}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00.Device\Grahpic">
+      <UniqueIdentifier>{10bcee41-2c6a-46be-8f3c-ee3031729f96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dxerr&amp;Exception">
+      <UniqueIdentifier>{308f6452-5080-4278-985f-bef9c105ca19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dxerr&amp;Exception\DxgiInfoMgr">
+      <UniqueIdentifier>{53ccfd3a-dddf-41c0-b467-19241b8e35f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="98.Shaders">
+      <UniqueIdentifier>{95c1f0a4-dc8d-4279-9687-58f0f402a0cd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="WinMainApp.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="BsException.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Keyboard.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Mouse.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="App.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics.cpp">
+      <Filter>00.Device\Grahpic</Filter>
+    </ClCompile>
+    <ClCompile Include="dxerr.cpp">
+      <Filter>Dxerr&amp;Exception</Filter>
+    </ClCompile>
+    <ClCompile Include="DxgiInfoManager.cpp">
+      <Filter>Dxerr&amp;Exception\DxgiInfoMgr</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Window.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BsWin.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BsException.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Mouse.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="App.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics.h">
+      <Filter>00.Device\Grahpic</Filter>
+    </ClInclude>
+    <ClInclude Include="dxerr.h">
+      <Filter>Dxerr&amp;Exception</Filter>
+    </ClInclude>
+    <ClInclude Include="DxgiInfoManager.h">
+      <Filter>Dxerr&amp;Exception\DxgiInfoMgr</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MyDirectx11.rc">
+      <Filter>리소스 파일</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="nyanCat.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="DXGetErrorDescription.inl">
+      <Filter>Dxerr&amp;Exception</Filter>
+    </None>
+    <None Include="DXGetErrorString.inl">
+      <Filter>Dxerr&amp;Exception</Filter>
+    </None>
+    <None Include="DXTrace.inl">
+      <Filter>Dxerr&amp;Exception</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PixelShader.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
