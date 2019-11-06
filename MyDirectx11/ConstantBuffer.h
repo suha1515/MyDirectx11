@@ -63,7 +63,20 @@ public:
 	using ConstantBuffer<T>::ConstantBuffer;
 	void Bind(Graphics& gfx) noexcept override
 	{
-		GetContext(gfx)->PSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+		GetContext(gfx)->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+	}
+};
+
+template<typename T>
+class PixelConstantBuffer : public ConstantBuffer<T>
+{
+	using ConstantBuffer<T>::pConstantBuffer;
+	using Bindable::GetContext;
+public:
+	using ConstantBuffer<T>::ConstantBuffer;
+	void Bind(Graphics& gfx) noexcept override
+	{
+		GetContext(gfx)->PSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressof());
 	}
 };
 
