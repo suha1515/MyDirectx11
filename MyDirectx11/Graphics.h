@@ -4,9 +4,16 @@
 #include <d3d11.h>
 #include <wrl.h>					//ComPointer가 있는 헤더
 #include "DxgiInfoManager.h"
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
+#include <memory>
+#include <random>
+
+#define IS_DEBUG true
 
 class Graphics
 {
+	friend class Bindable;
 public:
 	class Exception : public BsException
 	{
@@ -53,8 +60,12 @@ public:
 
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
+	void DrawIndexed(UINT count)noexcept(!IS_DEBUG);
+	void SetProjection(DirectX::FXMMATRIX proj) noexcept;
+	DirectX::XMMATRIX GetProjection() const noexcept;
 	void DrawTestTrangle(float angle,float x,float z);
 private:
+	DirectX::XMMATRIX projection;
 #ifndef NDEBUG			//디버그모드에서만 인포매니저를 사용한다.
 	DxgiInfoManager infoManager;
 #endif

@@ -31,6 +31,21 @@
     <Filter Include="98.Shaders">
       <UniqueIdentifier>{95c1f0a4-dc8d-4279-9687-58f0f402a0cd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\Bindable">
+      <UniqueIdentifier>{1d547645-b71e-4477-a59b-e549eb26e4de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Drawable">
+      <UniqueIdentifier>{ce1d95f4-772c-424b-a06a-4b03959dc09c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Macros">
+      <UniqueIdentifier>{2191bbc9-63b2-402c-8764-a690cacb8cf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Bindable">
+      <UniqueIdentifier>{34134ec0-2cda-43cb-9d78-9cd0bf16f174}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Drawable">
+      <UniqueIdentifier>{0a7f4208-254f-4ef7-857b-43a6d4a6c76c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMainApp.cpp">
@@ -62,6 +77,27 @@
     </ClCompile>
     <ClCompile Include="DxgiInfoManager.cpp">
       <Filter>Dxerr&amp;Exception\DxgiInfoMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="Bindable.cpp">
+      <Filter>소스 파일\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Drawable.cpp">
+      <Filter>소스 파일\Drawable</Filter>
+    </ClCompile>
+    <ClCompile Include="IndexBuffer.cpp">
+      <Filter>소스 파일\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="InputLayout.cpp">
+      <Filter>소스 파일\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelShader.cpp">
+      <Filter>소스 파일\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Topology.cpp">
+      <Filter>소스 파일\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformCbuf.cpp">
+      <Filter>소스 파일\Bindable</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +133,36 @@
     </ClInclude>
     <ClInclude Include="DxgiInfoManager.h">
       <Filter>Dxerr&amp;Exception\DxgiInfoMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsThrowMacros.h">
+      <Filter>헤더 파일\Macros</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsThrowMacros.h">
+      <Filter>헤더 파일\Macros</Filter>
+    </ClInclude>
+    <ClInclude Include="Drawable.h">
+      <Filter>헤더 파일\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="Bindable.h">
+      <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="IndexBuffer.h">
+      <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="ConstantBuffer.h">
+      <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="InputLayout.h">
+      <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelShader.h">
+      <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="Topology.h">
+      <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformCbuf.h">
+      <Filter>헤더 파일\Bindable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
