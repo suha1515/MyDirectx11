@@ -53,7 +53,7 @@ public:
 
 	void EndFrame();
 	void ClearBuffer(float red, float green, float blue) noexcept;
-	void DrawTestTrangle(float angle,float x,float y);
+	void DrawTestTrangle(float angle,float x,float z);
 private:
 #ifndef NDEBUG			//디버그모드에서만 인포매니저를 사용한다.
 	DxgiInfoManager infoManager;
@@ -62,6 +62,7 @@ private:
 	Microsoft::WRL::ComPtr< IDXGISwapChain> pSwap;
 	Microsoft::WRL::ComPtr< ID3D11DeviceContext> pContext;
 	Microsoft::WRL::ComPtr< ID3D11RenderTargetView> pTarget;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> pDSV;
 	
 };
 

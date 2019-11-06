@@ -93,6 +93,57 @@ Graphics::Graphics(HWND hWnd)
 	GFX_THROW_INFO(pDevice->CreateRenderTargetView(pBackBuffer.Get(), nullptr, &pTarget));
 	//첫번째 매개변수는 RenderTargetView를 만들기위한 버퍼의 정보, 두번째는 만들면서 부가적인정보, 3번째는 만들어진 타겟을 가르킬 이중포인터
 
+	// 깊이버퍼 만들기
+	// 프레임버퍼는 스왑체인을 만들면서 같이 생기지만  깊이버퍼를 만들기 위해서는 직접 텍스쳐를 만들어야한다
+	// 텍스쳐를 얻고 출력조립기에 바인딩해야한다.
+
+	//깊이-스텐실 버퍼 만들기 (깊이버퍼는 스텐실버퍼와 같은 공간을 공유하며 각각의 하는일이 다르다)
+	//둘다 마스크의 한종류이며 깊이버퍼는 오직 깊이에대해서만 마스크를 하지만 스텐실은 더많은 종류의 마스킹을 담당한다.
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = TRUE;	//깊이테스트를 활성화한다.
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	// D3D11_DEPTH_WRITE_MASK - 깊이테스트의 마스크 종류는 ZERO,ALL 두개뿐이며 단순히 끄고 켜는것 밖에 없다.
+	// Zero 일경우 쓰지않고 ALL 일경우 깊이-스텐실 버퍼에 기록한다.
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	// D3D11_COMPARISON_FUNC - 마스크를 어떻게 비교할지 정하며 픽셀이 쓰일지 버려질지 정해진다.
+	// ex) D3D11_COMPARISON_LESS -> 만약 z값이 작으면 즉 스크린과 가깝다면 픽셀이 선택되며 이전의 것을 가린다.
+
+	//스텐실부분은 잠시 넘어가며 깊이에 대해서만 다뤄보자. 구조체를 완성했으면 깊이버퍼를 만들어보자
+	wrl::ComPtr<ID3D11DepthStencilState> pDSState;	//인터페이스 포인터에 대한 주소를 받아오며
+	GFX_THROW_INFO(pDevice->CreateDepthStencilState(&dsDesc, &pDSState));//해당 인터페이스를 구조체 정보로 채운다.
+
+	//깊이-스텐실 인터페이스를 파이프라인(출력조립기)에 바인딩한다.
+	pContext->OMSetDepthStencilState(pDSState.Get(), 1u);
+
+	// 이제 깊이-스텐실 텍스쳐를 만들어야 한다.
+	wrl::ComPtr<ID3D11Texture2D> pDepthStencil;
+	D3D11_TEXTURE2D_DESC descDepth = {};
+	descDepth.Width = 800u;		//가로 세로는 SwapChain 과 같아야한다.
+	descDepth.Height = 600u;
+	descDepth.MipLevels = 1u;	//밉맵에 대해서는 나중에 다룬다.
+	descDepth.ArraySize = 1u;	//나중에 단일 텍스쳐 자원에 대해서 배열단위로 텍스쳐를 넣을수 있다. 나중에 다룬다
+	descDepth.Format = DXGI_FORMAT_D32_FLOAT;	//텍스쳐의 포맷으로 보통 R32G32B32 이런 포맷이지만 D32 로 알수있다. 이것은 깊이를위해 있는것이다
+												//즉 32bit가 깊이값을위해 사용된다.
+	descDepth.SampleDesc.Count = 1u;		//안티앨리어싱을 위한 값들 나중에 다룬다.
+	descDepth.SampleDesc.Quality = 0u;
+	
+	descDepth.Usage = D3D11_USAGE_DEFAULT;			//용도플래그
+	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL; //바인드 플래그는 꼭 Depth_Stencil로 지정해야 해당 리소스를 깊이-스텐실로 사용한다
+
+	//이제 텍스처 구조체를 다채웠으면 텍스처를 생성하자
+	//1- 텍스쳐 정보를 담은 구조체의 포인터, 2- 텍스쳐를 채울 SubResource 하지만 깊이버퍼이므로 아무것도 채우지 않아도 된다
+	//3- 텍스쳐pp
+	GFX_THROW_INFO(pDevice->CreateTexture2D(&descDepth, nullptr, &pDepthStencil));
+
+	//백버퍼에서 뷰를 만든것처럼 깊이-스텐실 뷰를 만들어서 출력조립기에 바인딩해야한다.
+	CD3D11_DEPTH_STENCIL_VIEW_DESC descDsv = {};
+	descDsv.Format = DXGI_FORMAT_D32_FLOAT;
+	descDsv.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	descDsv.Texture2D.MipSlice = 0u;
+	GFX_THROW_INFO(pDevice->CreateDepthStencilView(pDepthStencil.Get(), &descDsv, &pDSV));
+
+	//깊이-스텐실 뷰를 출력조립기에 바인딩한다.
+	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), pDSV.Get());
 }
 void Graphics::EndFrame()
 {
@@ -123,9 +174,10 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 {
 	const float color[] = { red,green,blue,1.0f };
 	pContext->ClearRenderTargetView(pTarget.Get(), color);
+	pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
- void Graphics::DrawTestTrangle(float angle,float x,float y)
+ void Graphics::DrawTestTrangle(float angle,float x,float z)
 {
 	 //XM이 붙은 자료형이나 함수들은 SIMD에 최적화되어진 변수들이다.
 	 //기존의 D3DXVECTOR 과 다르게 SIMD에 최적화되어 직접접근을 할수 없으며 인터페이스를통한 접근만이 가능하다
@@ -222,10 +274,10 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	const ConstantBuffer cb =
 	{
 		{
-				dx::XMMatrixTranspose(							//HLSL에서는 기본적으로 들어오는 행렬은 열위주로 여긴다 row_major 키워드로 행위주로 바꿀수는있지만 조금 느리게 만든다
+				dx::XMMatrixTranspose(							
 				dx::XMMatrixRotationZ(angle) *
-				dx::XMMatrixRotationX(angle) *					//그러므로 GPU상에서 해당 연산을 지우기위해 (최적화) 응용프로그램에서 해당 행렬을 전치하여 열위주로 바꾸면 된다. (CPU상에서의 전치는 빠른 연산이므로 GPU상에서보다 더 이득이 있다)
-				dx::XMMatrixTranslation(x,y,4.0f) *				//Multiply 함수는 C스타일이지만 * 연산자를 오버로딩 했으므로 그냥 곱하기해도된다.
+				dx::XMMatrixRotationX(angle) *					
+				dx::XMMatrixTranslation(x,0.0f,z+4.0f) *	//현재 깊이버퍼가 활성화 되어있지않다 마우스 움직임에따라 Z값을 변경하는데 먼저그린순서대로 가려지게된다.			
 				dx::XMMatrixPerspectiveLH(1.0f,3.0f / 4.0f,0.5f,10.0f)
 				)
 		}
@@ -347,7 +399,7 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	// Blob 함수의 경우 2번째 매개변수는 읽은 파일에대해 다시 ID3DBlob 인터페이스를 넘기기에 &연산자를 사용하여 기존의 인터페이스와 연결을 끊고 받아야
 	// 메모리 릭이 일어나지 않는다. 그러므로 각 함수의 기능을 잘 확인해야 한다.
 
-	pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), nullptr);	//이런방식으로 주소를 얻어야한다 &으로 새로운 값을 받지 않는이상 & 연산자는 해당 인터페이스와 연결을 끊는다
+	//pContext->OMSetRenderTargets(1u, pTarget.GetAddressOf(), nullptr);	//이런방식으로 주소를 얻어야한다 &으로 새로운 값을 받지 않는이상 & 연산자는 해당 인터페이스와 연결을 끊는다
 	
 	// primitive topology 를 정하여 어떻게 정점이 그려질지를 정해야한다
 	pContext->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
