@@ -145,30 +145,21 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 		{
 			float x;
 			float y;
+			float z;
 		}pos;
-		struct
-		{
-			unsigned char r;
-			unsigned char g;
-			unsigned char b;
-			unsigned char a;
-		}color;		
 	};
 
 	Vertex vertices[] =
 	{
-		{ 0.0f,0.5f,255,0,0,0 },	//x,y 말고 컬러값도 들어갔다.
-		{ 0.5f,-0.5f,0,255,0,0},
-		{ -0.5f,-0.5f ,0,0,255,0},
-		{ -0.3f, 0.3f ,0,255,0,0},
-		{  0.3f, 0.3f ,0,0,255,0},
-		{  0.0f,-1.0f ,255,0,0,0},
-
-		//{ 0.5f,1.0f },
-		//{ 1.0f,0.5f },
-		//{ 0.5f,0.5f },
+		{-1.0f,-1.0f,-1.0f},
+		{ 1.0f,-1.0f,-1.0f},
+		{-1.0f, 1.0f,-1.0f},
+		{ 1.0f, 1.0f,-1.0f},
+		{-1.0f,-1.0f, 1.0f},
+		{ 1.0f,-1.0f, 1.0f},
+		{-1.0f, 1.0f, 1.0f},
+		{ 1.0f, 1.0f, 1.0f},
 	};
-	vertices[0].color.g = 255;
 
 	//생성할 버퍼의 타입을 정한다.
 	D3D11_BUFFER_DESC bd = {};
@@ -198,10 +189,12 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	// 인덱스 버퍼 생성
 	const unsigned short indices[] =
 	{
-		0,1,2,
-		0,2,3,
-		0,4,1,
-		2,1,5,
+		0,2,1,	2,3,1,
+		1,3,5,	3,7,5,
+		2,6,3,	3,6,7,
+		4,5,7,	4,7,6,
+		0,4,2,	2,4,6,
+		0,1,4,	1,5,4,
 	};
 	wrl::ComPtr<ID3D11Buffer> pIndexBuffer;
 	//버퍼 디스크립터 생성
@@ -230,9 +223,10 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	{
 		{
 				dx::XMMatrixTranspose(							//HLSL에서는 기본적으로 들어오는 행렬은 열위주로 여긴다 row_major 키워드로 행위주로 바꿀수는있지만 조금 느리게 만든다
-				dx::XMMatrixRotationZ(angle)*					//그러므로 GPU상에서 해당 연산을 지우기위해 (최적화) 응용프로그램에서 해당 행렬을 전치하여 열위주로 바꾸면 된다. (CPU상에서의 전치는 빠른 연산이므로 GPU상에서보다 더 이득이 있다)
-				dx::XMMatrixScaling(3.0f/4.0f,1.0f,1.0f)*		//Multiply 함수는 C스타일이지만 * 연산자를 오버로딩 했으므로 그냥 곱하기해도된다.
-				dx::XMMatrixTranslation(x,y,0.0f)
+				dx::XMMatrixRotationZ(angle) *
+				dx::XMMatrixRotationX(angle) *					//그러므로 GPU상에서 해당 연산을 지우기위해 (최적화) 응용프로그램에서 해당 행렬을 전치하여 열위주로 바꾸면 된다. (CPU상에서의 전치는 빠른 연산이므로 GPU상에서보다 더 이득이 있다)
+				dx::XMMatrixTranslation(x,y,4.0f) *				//Multiply 함수는 C스타일이지만 * 연산자를 오버로딩 했으므로 그냥 곱하기해도된다.
+				dx::XMMatrixPerspectiveLH(1.0f,3.0f / 4.0f,0.5f,10.0f)
 				)
 		}
 	};
@@ -251,6 +245,44 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 
 	// 생성한 상수버퍼를 정점쉐이더에 바인딩한다. 
 	pContext->VSSetConstantBuffers(0, 1u, pConstanctBuffer.GetAddressOf());
+
+	struct ConstantBuffer2		//현재 색깔이 보간되어 무지개색으로 나오는것을 막고 solid 로 표현하기위해 상수버퍼를 정의한다.
+	{
+		struct
+		{
+			float r;
+			float g;
+			float b;
+			float a;
+		}face_colors[6];
+	};
+
+	const ConstantBuffer2 cb2 =
+	{
+		{
+			{1.0f,0.0f,1.0f},
+			{1.0f,0.0f,0.0f},
+			{0.0f,1.0f,0.0f},
+			{0.0f,0.0f,1.0f},
+			{1.0f,1.0f,0.0f},
+			{0.0f,1.0f,1.0f},
+		}
+	};
+	//상수버퍼2 생성
+	wrl::ComPtr<ID3D11Buffer> pConstanceBuffer2;
+	D3D11_BUFFER_DESC cbd2;
+	cbd2.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	cbd2.Usage = D3D11_USAGE_DEFAULT;
+	cbd2.CPUAccessFlags = 0u;
+	cbd2.MiscFlags = 0u;
+	cbd2.ByteWidth = sizeof(cb2);
+	cbd2.StructureByteStride = 0u;
+	D3D11_SUBRESOURCE_DATA csd2 = {};
+	csd2.pSysMem = &cb2;
+	GFX_THROW_INFO(pDevice->CreateBuffer(&cbd2, &csd2, &pConstanceBuffer2));
+
+	//상수버퍼2를 픽셀쉐이더 바인딩한다.
+	pContext->PSSetConstantBuffers(0u, 1u, pConstanceBuffer2.GetAddressOf());
 
 	//픽셀 쉐이더를 만든다 
 	wrl::ComPtr<ID3D11PixelShader> pPixelShader;
@@ -286,8 +318,7 @@ void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 	// 5-  각각의 요소 사이의 오프셋을 정한다, 6- 단일 입력슬롯을 위해 입력데이터클래스를 정의한다(2개가있는데 PRE_VERTEX,PER_INSTANCE이다 즉 인스턴스를 사용할지 안할지를 정해준다..7- 같은 인스턴스 데이터를 이용하여 그릴 인스턴스의 숫자. 
 	const D3D11_INPUT_ELEMENT_DESC ied[] =
 	{
-		{"Position",0,DXGI_FORMAT_R32G32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"Color",0,DXGI_FORMAT_R8G8B8A8_UNORM,0,8u,D3D11_INPUT_PER_VERTEX_DATA,0},	//컬러를 넣기위해 시멘틱,포맷,오프셋을 지정했다 오프셋이 8 인이유는 앞의 원소가 float2개로 이루어져 있으므로..
+		{"Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
 		//UNORM 키워드는 지금 R8G8B8A8 은 색깔의 rgba가 unsigned char로 이루어져 int 형으로 표현되어있다
 		//UINT의 경우에는 쉐이더에 있는그대로 int형으로 보내지만 UNORM은 해당 0-255의 값을 0~1.0 사이의 값으로 노말라이즈한다.
 	};
