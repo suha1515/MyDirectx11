@@ -6,8 +6,8 @@ cbuffer CBuf
 
 
 //픽셀쉐이더는 레스터라이즈 된 픽셀의 색깔을 정한다.
-
+//SV_PrimitiveID는 매 프레임마다 DrawCall시 들어오는 정점에 매겨지는 ID이다.
 float4 main(uint tid : SV_PrimitiveID) : SV_Target
 {
-	return face_colors[tid / 2];
+	return face_colors[tid / 2]%6;
 }

@@ -1,36 +1,25 @@
 #include "Box.h"
 #include "BindableBase.h"
 #include "GraphicsThrowMacros.h"
+#include "Sphere.h"
 
 Box::Box(Graphics& gfx, std::mt19937& rng, std::uniform_real_distribution<float>& adist, std::uniform_real_distribution<float>& ddist, std::uniform_real_distribution<float>& odist, std::uniform_real_distribution<float>& rdist)
 	:r(rdist(rng)),droll(ddist(rng)),dpitch(ddist(rng)),dyaw(ddist(rng)),dphi(odist(rng)),dtheta(odist(rng)),dchi(odist(rng)),
 	chi(adist(rng)),theta(adist(rng)),phi(adist(rng))
 {
+	namespace dx = DirectX;
 	if (!IsStaticInitialized())
 	{
-
-
 		struct Vertex
 		{
 			struct
 			{
-				float x;
-				float y;
-				float z;
+				dx::XMFLOAT3 pos;			//XMFLOAT3 FLOAT3 형식은 연속된공간에서의 자료형이아니다.
 			}pos;
 		};
-		const std::vector<Vertex> vertices =								//정점구조
-		{
-			{ -1.0f,-1.0f,-1.0f },
-			{ 1.0f,-1.0f,-1.0f },
-			{ -1.0f,1.0f,-1.0f },
-			{ 1.0f,1.0f,-1.0f },
-			{ -1.0f,-1.0f,1.0f },
-			{ 1.0f,-1.0f,1.0f },
-			{ -1.0f,1.0f,1.0f },
-			{ 1.0f,1.0f,1.0f },
-		};
-		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vertices));				//버텍스 버퍼 생성
+		auto model = Sphere::Make<Vertex>();
+		model.Transform(dx::XMMatrixScaling(1.0f, 1.0f, 1.2f));
+		AddStaticBind(std::make_unique<VertexBuffer>(gfx, model.vertices));				//버텍스 버퍼 생성
 
 		auto pvs = std::make_unique<VertexShader>(gfx, L"VertexShader.cso");//버텍스 쉐이더 생성	
 		auto pvsbc = pvs->GetBytecode();
@@ -38,16 +27,7 @@ Box::Box(Graphics& gfx, std::mt19937& rng, std::uniform_real_distribution<float>
 
 		AddStaticBind(std::make_unique < PixelShader>(gfx, L"PixelShader.cso"));	//픽셀쉐이더 생성
 
-		const std::vector<unsigned short> indices = {
-			0,2,1, 2,3,1,
-			1,3,5, 3,7,5,
-			2,6,3, 3,6,7,
-			4,5,7, 4,7,6,
-			0,4,2, 2,4,6,
-			0,1,4, 1,5,4
-		};
-
-		AddStaticIndexBuffer(std::make_unique < IndexBuffer>(gfx, indices));	//인덱스버퍼 생성
+		AddStaticIndexBuffer(std::make_unique < IndexBuffer>(gfx, model.indices));	//인덱스버퍼 생성
 
 		struct ConstantBuffer2
 		{
