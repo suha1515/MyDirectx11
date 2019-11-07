@@ -2,6 +2,7 @@
 #include <exception>
 #include <string>
 
+
 class BsException : public std::exception
 {
 public:

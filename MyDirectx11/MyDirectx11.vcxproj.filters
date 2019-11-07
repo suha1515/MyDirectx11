@@ -102,6 +102,12 @@
     <ClCompile Include="VertexBuffer.cpp">
       <Filter>소스 파일\Bindable</Filter>
     </ClCompile>
+    <ClCompile Include="VertexShader.cpp">
+      <Filter>소스 파일\Bindable</Filter>
+    </ClCompile>
+    <ClCompile Include="Box.cpp">
+      <Filter>소스 파일\Drawable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -169,6 +175,18 @@
     </ClInclude>
     <ClInclude Include="VertexBuffer.h">
       <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexShader.h">
+      <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="BindableBase.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Box.h">
+      <Filter>헤더 파일\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="DrawableBase.h">
+      <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

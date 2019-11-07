@@ -9,8 +9,6 @@
 #include <memory>
 #include <random>
 
-#define IS_DEBUG true
-
 class Graphics
 {
 	friend class Bindable;
@@ -63,7 +61,6 @@ public:
 	void DrawIndexed(UINT count)noexcept(!IS_DEBUG);
 	void SetProjection(DirectX::FXMMATRIX proj) noexcept;
 	DirectX::XMMATRIX GetProjection() const noexcept;
-	void DrawTestTrangle(float angle,float x,float z);
 private:
 	DirectX::XMMATRIX projection;
 #ifndef NDEBUG			//디버그모드에서만 인포매니저를 사용한다.
