@@ -111,6 +111,12 @@
     <ClCompile Include="Box.cpp">
       <Filter>소스 파일\Drawable</Filter>
     </ClCompile>
+    <ClCompile Include="Melon.cpp">
+      <Filter>소스 파일\Drawable</Filter>
+    </ClCompile>
+    <ClCompile Include="Pyramid.cpp">
+      <Filter>소스 파일\Drawable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -212,6 +218,12 @@
     <ClInclude Include="Sphere.h">
       <Filter>헤더 파일\Geometry</Filter>
     </ClInclude>
+    <ClInclude Include="Melon.h">
+      <Filter>헤더 파일\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="Pyramid.h">
+      <Filter>헤더 파일\Drawable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MyDirectx11.rc">
@@ -235,10 +247,16 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl">
+    <FxCompile Include="ColorBlendVS.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="PixelShader.hlsl">
+    <FxCompile Include="ColorBlendPS.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ColorIndexVS.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="ColorIndexPS.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
   </ItemGroup>

@@ -1,7 +1,7 @@
 //20번째 강의 상수버퍼2를 위한 상수버퍼
 cbuffer CBuf
 {
-	float4 face_colors[6];
+	float4 face_colors[8];
 };
 
 
@@ -9,5 +9,5 @@ cbuffer CBuf
 //SV_PrimitiveID는 매 프레임마다 DrawCall시 들어오는 정점에 매겨지는 ID이다.
 float4 main(uint tid : SV_PrimitiveID) : SV_Target
 {
-	return face_colors[tid / 2]%6;
+	return face_colors[(tid / 2) % 8];
 }

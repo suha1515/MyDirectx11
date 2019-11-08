@@ -67,6 +67,7 @@ public:
 			indices.push_back(calcIdx(iLat + 1, longDiv - 1));
 			indices.push_back(calcIdx(iLat + 1, 0));
 		}
+
 		// cap fans
 		for (unsigned short iLong = 0; iLong < longDiv - 1; iLong++)
 		{
