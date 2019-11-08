@@ -1,7 +1,7 @@
 
 cbuffer CBuf
 {
-	 matrix transform;
+	matrix transform;
 };
 //HLSL은 기본적으로 들어오는 모든 행렬은 열위주로 여긴다
 //row_major 은 행렬이 행위주임을 알려줄는 키워드이다. 하지만 이러한 연산은 조금 느리게 만든다.

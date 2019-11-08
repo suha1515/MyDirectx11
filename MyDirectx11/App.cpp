@@ -2,10 +2,15 @@
 #include "Box.h"
 #include "Melon.h"
 #include "Pyramid.h"
+#include "Sheet.h"
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
 #include "BsMath.h"
+#include "Surface.h"
+#include "GDIPlusManager.h"
+
+GDIPlusManager gdipm;
 
 App::App()
 	:wnd(800,600,"My Window")
@@ -36,6 +41,8 @@ App::App()
 					gfx, rng, adist, ddist,
 					odist, rdist, longdist, latdist
 					);
+			//case 3:
+				//return std::make_unique<Sheet>(gfx, rng, adist, ddist, odist, rdist);
 			default:
 				assert(false && "bad drawable type in factory");
 				return {};
@@ -59,6 +66,8 @@ App::App()
 	std::generate_n(std::back_inserter(drawables), nDrawables, f);
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
+	const auto s = Surface::FromFile("Images\\Cat50.png");
+	//const auto s = Surface::FromFile("Images\\kappa50.png");
 }
 
 int App::Go()
@@ -87,7 +96,7 @@ void App::DoFrame()
 	wnd.Gfx().ClearBuffer(0.07f, 0.0f, 0.12f);
 	for (auto& d : drawables)
 	{
-		d->Update(dt);
+		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE)?0.0f:dt);
 		d->Draw(wnd.Gfx());
 	}
 	wnd.Gfx().EndFrame();
