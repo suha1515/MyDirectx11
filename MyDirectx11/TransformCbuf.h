@@ -2,16 +2,25 @@
 #include "ConstantBuffer.h"
 #include "Drawable.h"
 
+//변환행렬 상수버퍼 클래스
+/*
+	정점 쉐이더에 전달할 월드,뷰,투영 행렬을 상수버퍼로 전달하는 클래스이다.
+*/
+
 class TransformCbuf :
 	public Bindable
 {
+private:
+	struct Transforms
+	{
+		DirectX::XMMATRIX modelViewProj;
+		DirectX::XMMATRIX model;
+	};
 public:
 	TransformCbuf(Graphics& gfx, const Drawable& parent);
 	void Bind(Graphics& gfx)noexcept override;
 private:
-	//VertexConstantBuffer<DirectX::XMMATRIX> vcbuf;
-	//버텍스 상수버퍼또한 static화하여 각 객체마다 공유하도록 사용한다.
-	static std::unique_ptr < VertexConstantBuffer<DirectX::XMMATRIX>> pVcbuf;
+	static std::unique_ptr < VertexConstantBuffer<Transforms>> pVcbuf;
 	const Drawable& parent;
 };
 

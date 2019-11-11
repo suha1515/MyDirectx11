@@ -61,6 +61,12 @@
     <Filter Include="96.Camera">
       <UniqueIdentifier>{5ab00c56-a7bc-4152-bdbd-40adfc3aaf62}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01.Light">
+      <UniqueIdentifier>{6cd63615-b1ca-4025-93bf-deca73504f91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01.Light\PointLight">
+      <UniqueIdentifier>{7c763a2d-97af-4af1-b1bb-6749d93aa903}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMainApp.cpp">
@@ -170,6 +176,12 @@
     </ClCompile>
     <ClCompile Include="Camera.cpp">
       <Filter>96.Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="PointLight.cpp">
+      <Filter>01.Light\PointLight</Filter>
+    </ClCompile>
+    <ClCompile Include="SolidSphere.cpp">
+      <Filter>소스 파일\Drawable</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -326,6 +338,12 @@
     <ClInclude Include="Camera.h">
       <Filter>96.Camera</Filter>
     </ClInclude>
+    <ClInclude Include="PointLight.h">
+      <Filter>01.Light\PointLight</Filter>
+    </ClInclude>
+    <ClInclude Include="SolidSphere.h">
+      <Filter>헤더 파일\Drawable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MyDirectx11.rc">
@@ -365,6 +383,18 @@
       <Filter>98.Shaders</Filter>
     </FxCompile>
     <FxCompile Include="ColorIndexVS.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PhongPS.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PhongVS.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SolidVS.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SolidPS.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
   </ItemGroup>

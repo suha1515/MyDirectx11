@@ -1,9 +1,5 @@
 #include "App.h"
 #include "Box.h"
-#include "Melon.h"
-#include "Pyramid.h"
-#include "Sheet.h"
-#include "SkinnedBox.h"
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
@@ -17,7 +13,7 @@ namespace dx = DirectX;
 GDIPlusManager gdipm;
 
 App::App()
-	:wnd(800,600,"My Window")
+	:wnd(800,600,"My Window"),light(wnd.Gfx())
 {
 	class Factory
 	{
@@ -28,31 +24,10 @@ App::App()
 		{}
 		std::unique_ptr<Drawable> operator()()
 		{
-			switch (typedist(rng))
-			{
-			case 0:
-				return std::make_unique<Pyramid>(
-					gfx, rng, adist, ddist,
-					odist, rdist
-					);
-			case 1:
-				return std::make_unique<Box>(
-					gfx, rng, adist, ddist,
-					odist, rdist, bdist
-					);
-			case 2:
-				return std::make_unique<Melon>(
-					gfx, rng, adist, ddist,
-					odist, rdist, longdist, latdist
-					);
-			case 3:
-				return std::make_unique<Sheet>(gfx, rng, adist, ddist, odist, rdist);
-			case 4:
-				return std::make_unique<SkinnedBox>(gfx, rng, adist, ddist, odist, rdist);
-			default:
-				assert(false && "bad drawable type in factory");
-				return {};
-			}
+			return std::make_unique<Box>(
+				gfx, rng, adist, ddist,
+				odist, rdist, bdist
+				);
 		}
 	private:
 		Graphics& gfx;
@@ -62,9 +37,6 @@ App::App()
 		std::uniform_real_distribution<float> odist{ 0.0f,PI * 0.08f };
 		std::uniform_real_distribution<float> rdist{ 6.0f,20.0f };
 		std::uniform_real_distribution<float> bdist{ 0.4f,3.0f };
-		std::uniform_int_distribution<int> latdist{ 5,20 };
-		std::uniform_int_distribution<int> longdist{ 10,40 };
-		std::uniform_int_distribution<int> typedist{ 0,4 };
 	};
 
 	drawables.reserve(nDrawables);
@@ -95,12 +67,16 @@ void App::DoFrame()
 
 	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
 	wnd.Gfx().SetCamera(cam.GetMatrix());
+	//점광원을 파이프라인에 바인딩
+	light.Bind(wnd.Gfx());
 
 	for (auto& d : drawables)
 	{
 		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE)?0.0f:dt);
 		d->Draw(wnd.Gfx());
 	}
+	//광원의 위치를 그린다.
+	light.Draw(wnd.Gfx());
 
 	//imgui 윈도우를 만들며 시뮬레이션 스피드를 정한다.
 	if (ImGui::Begin("Simulation Speed"))	//Begin함수가 윈도우를 만들며 윈도우이름이 정해진다 만약 최소화 될경우 false 반환이다(내부 구성이 생기지 않음)
@@ -112,6 +88,8 @@ void App::DoFrame()
 	ImGui::End();//모든 작업이 끝나면 End 함수 호출하여 렌더를 진행한다 기존의 Gui 시스템과 다르게 imgui는 매 프레임마다 gui들을 렌더링하는형식이다 (기존은 정적임)
 	//imgui window to control Camera
 	cam.SpwanControlWindow();
+	//imgui window to control PointLight;
+	light.SpawnControlWindow();
 	
 	//present
 	wnd.Gfx().EndFrame();
