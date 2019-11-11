@@ -12,6 +12,8 @@
 #include "GDIPlusManager.h"
 #include "imgui/imgui.h"
 
+namespace dx = DirectX;
+
 GDIPlusManager gdipm;
 
 App::App()
@@ -69,8 +71,11 @@ App::App()
 	std::generate_n(std::back_inserter(drawables), nDrawables, Factory{ wnd.Gfx() });
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
-	const auto s = Surface::FromFile("Images\\Cat50.png");
+	wnd.Gfx().SetCamera(dx::XMMatrixTranslation(0.0f, 0.0f, 20.f));
+
+	//const auto s = Surface::FromFile("Images\\Cat50.png");
 	//const auto s = Surface::FromFile("Images\\kappa50.png");
+
 }
 
 int App::Go()

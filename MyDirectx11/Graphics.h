@@ -63,13 +63,18 @@ public:
 	void SetProjection(DirectX::FXMMATRIX proj) noexcept;
 	DirectX::XMMATRIX GetProjection() const noexcept;
 
+	//Camera
+	void SetCamera(DirectX::FXMMATRIX cam) noexcept;
+	DirectX::XMMATRIX GetCamera() const noexcept;
+
 	//imgui control function
 	void EnableImgui() noexcept;
 	void DisableImgui() noexcept;
 	bool IsImguiEnabled() const noexcept;
 private:
-	bool imguiEnabled = true;
 	DirectX::XMMATRIX projection;
+	DirectX::XMMATRIX camera;
+	bool imguiEnabled = true;
 #ifndef NDEBUG			//디버그모드에서만 인포매니저를 사용한다.
 	DxgiInfoManager infoManager;
 #endif
