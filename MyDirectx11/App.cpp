@@ -90,12 +90,8 @@ App::~App()
 }
 void App::DoFrame()
 {
-	//const float t = timer.Peek();
-	//std::ostringstream oss;
-	//oss << "Time elapsed : " << std::setprecision(1) << std::fixed << t << "s";
-	//wnd.SetTitle(oss.str());
-	//setprecision은  fixed 존재시 정수부+소수부 기준으로 다섯자리 반올림 없을시 소수부 5자리 반올림
-	auto dt = timer.Mark();
+	//imgui에서 설정한 값으로 dt 조절로 물체의 빠르기를 정한다.
+	auto dt = timer.Mark()* speed_factor;
 
 	if (wnd.kbd.KeyIsPressed(VK_SPACE))
 		wnd.Gfx().DisableImgui();
@@ -105,16 +101,21 @@ void App::DoFrame()
 
 	for (auto& d : drawables)
 	{
-		//처음보는방법인데 삼항연산자로 업데이트를 종료할수있는게 신기하다
-		//IsKeyPressed 로 키가 눌렸는지 확인하고 눌렸으면 0.0f 아니면 delttime전달삼항연산자.. 자주보자..
 		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE)?0.0f:dt);
 		d->Draw(wnd.Gfx());
 	}
 
-	if (show_demo_window)
-	{
-		ImGui::ShowDemoWindow(&show_demo_window);
-	}
+	static char buffer[1024];
 
+	//imgui 윈도우를 만들며 시뮬레이션 스피드를 정한다.
+	if (ImGui::Begin("Simulation Speed"))	//Begin함수가 윈도우를 만들며 윈도우이름이 정해진다 만약 최소화 될경우 false 반환이다(내부 구성이 생기지 않음)
+	{
+		ImGui::SliderFloat("Speed Factor", &speed_factor, 0.0f, 4.0f);		//슬라이더를 만드는 Imgui
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);	//텍스트를표시하는 imgui
+		ImGui::InputText("Input Text", buffer, sizeof(buffer));				//텍스트 입력란
+	}
+	ImGui::End();//모든 작업이 끝나면 End 함수 호출하여 렌더를 진행한다 기존의 Gui 시스템과 다르게 imgui는 매 프레임마다 gui들을 렌더링하는형식이다 (기존은 정적임)
+
+	
 	wnd.Gfx().EndFrame();
 } 
