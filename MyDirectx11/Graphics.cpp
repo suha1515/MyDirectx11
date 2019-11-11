@@ -5,6 +5,7 @@
 #include <cmath>
 #include <DirectXMath.h>
 #include "GraphicsThrowMacros.h"
+#include "imgui/imgui_impl_dx11.h"
 
 namespace wrl = Microsoft::WRL;
 //DirectxMath 네임스페이스
@@ -141,6 +142,9 @@ Graphics::Graphics(HWND hWnd)
 	//RS는 레스터라이즈 Rasterize Stage 의 줄임말 그리고 함수이름이 Viewports (복수형)임을 보아 다수의 뷰포트를 넘길 수 있다.
 	pContext->RSSetViewports(1u, &vp);
 
+	//Initialize imgui d3d implement
+	ImGui_ImplDX11_Init(pDevice.Get(), pContext.Get());
+	
 }
 void Graphics::EndFrame()
 {

@@ -10,6 +10,9 @@
 #include "BsMath.h"
 #include "Surface.h"
 #include "GDIPlusManager.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_win32.h"
+#include "imgui/imgui_impl_dx11.h"
 
 GDIPlusManager gdipm;
 
@@ -103,5 +106,20 @@ void App::DoFrame()
 		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE)?0.0f:dt);
 		d->Draw(wnd.Gfx());
 	}
+
+	//imgui
+	// imgui 에서 다른 부분의 프레임함수를 호출 (dx11과 win32)
+	ImGui_ImplDX11_NewFrame();		
+	ImGui_ImplWin32_NewFrame();	
+	ImGui::NewFrame();
+
+	static bool show_demo_window = true;
+	if (show_demo_window)
+	{
+		ImGui::ShowDemoWindow(&show_demo_window);
+	}
+	ImGui::Render();
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); 
+
 	wnd.Gfx().EndFrame();
 } 

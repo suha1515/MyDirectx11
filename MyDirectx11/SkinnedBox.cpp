@@ -4,6 +4,7 @@
 #include "Cube.h"
 #include "Surface.h"
 #include "Texture.h"
+#include "Sampler.h"
 
 SkinnedBox::SkinnedBox(Graphics& gfx,
 	std::mt19937& rng,
@@ -45,6 +46,8 @@ SkinnedBox::SkinnedBox(Graphics& gfx,
 		auto pvs = std::make_unique<VertexShader>(gfx, L"TextureVS.cso");
 		auto pvsbc = pvs->GetBytecode();
 		AddStaticBind(std::move(pvs));
+
+		AddStaticBind(std::make_unique<Sampler>(gfx));
 
 		AddStaticBind(std::make_unique<PixelShader>(gfx, L"TexturePS.cso"));
 

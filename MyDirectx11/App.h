@@ -7,6 +7,7 @@
 
 #include "Window.h"
 #include "Timer.h"
+#include "ImguiManager.h"
 
 class App
 {
@@ -17,6 +18,7 @@ public:
 private:
 	void DoFrame();
 private:
+	ImguiManager imgui;
 	Window wnd;
 	Timer timer;
 	std::vector<std::unique_ptr<class Drawable>> drawables;
