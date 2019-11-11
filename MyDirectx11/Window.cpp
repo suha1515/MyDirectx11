@@ -224,6 +224,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	}
 	case WM_LBUTTONDOWN:
 	{
+		SetForegroundWindow(hWnd);
 		if (imio.WantCaptureKeyboard)
 			break;
 		const POINTS pt = MAKEPOINTS(lParam);

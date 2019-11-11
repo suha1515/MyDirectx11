@@ -93,11 +93,7 @@ void App::DoFrame()
 	//imgui에서 설정한 값으로 dt 조절로 물체의 빠르기를 정한다.
 	auto dt = timer.Mark()* speed_factor;
 
-	if (wnd.kbd.KeyIsPressed(VK_SPACE))
-		wnd.Gfx().DisableImgui();
-	else
-		wnd.Gfx().EnableImgui();
-	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);	//BeginFrame에 버퍼클리어등 래핑되어있다.
+	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
 
 	for (auto& d : drawables)
 	{
