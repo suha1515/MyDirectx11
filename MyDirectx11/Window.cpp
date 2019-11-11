@@ -154,7 +154,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 		return true;
 
-	const auto imio = ImGui::GetIO();
+	const auto& imio = ImGui::GetIO();
 
 	//WM_CLOSE 메시지 발생시 return 0을 하는 이유는 기존처럼 PostQuitMessage(69)발생시
 	//운영체제에서 해당 윈도우를 없앤다 하지만 현재 프로시저가 클래스안에서 돌아가고 있는 점을 염두하면

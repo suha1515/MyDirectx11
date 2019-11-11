@@ -147,6 +147,11 @@ Graphics::Graphics(HWND hWnd)
 	ImGui_ImplDX11_Init(pDevice.Get(), pContext.Get());
 	
 }
+Graphics::~Graphics()
+{
+	ImGui_ImplDX11_Shutdown();
+}
+
 void Graphics::EndFrame()
 {
 
