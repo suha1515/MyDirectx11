@@ -154,6 +154,8 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 		return true;
 
+	const auto imio = ImGui::GetIO();
+
 	//WM_CLOSE 메시지 발생시 return 0을 하는 이유는 기존처럼 PostQuitMessage(69)발생시
 	//운영체제에서 해당 윈도우를 없앤다 하지만 현재 프로시저가 클래스안에서 돌아가고 있는 점을 염두하면
 	//해당 클래스의 소멸자에서 윈도우를 없애는것이 맞다 그렇지 않으면 두번 소멸자가 호출될것이다.
@@ -164,12 +166,10 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		return 0;
 		/******************************KEYBOARD MESSAGE***********************************/
 	case WM_KEYDOWN:
-		// 키보드를 누르고있는것을 처리하려면 lParam의 30번째 비트가 누른상태에는 1 누르지않으면 0이다.
-		// 즉 Pressed는 한번 누르는것이므로 손가락을 뗐을때 이므로 lPram의 30번째 비트가 0이되어야한다. 
-		// 정확하진 않으니 다시 확인해 볼것.
-	case WM_SYSKEYDOWN:
-		// API서는 시스템 버튼과 그냥 키보드 버튼이 나뉘어있으므로 VK_MENU(alt키)를 처리하려면
-		//WM_SYSKEYDOWN 에서 처리해여한다 그러므로 case 문을 같이 쓰는것이 모든 키보드를 사용하는데 편하다.
+	case WM_SYSKEYDOWN: //모든 시스템 메시지가 들어온다.
+		//imgui의 추가로 imgui에서 캡처하기 원하는 키가 있을경우 키보드 메시지를 가로챈다.
+		if (imio.WantCaptureKeyboard)
+			break;
 		if (!(lParam & 0x40000000) || kbd.AutorepeatIsEnabled())
 		{
 			kbd.OnKeyPressed(static_cast<unsigned char>(wParam));
@@ -177,9 +177,13 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		break;
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
+		if (imio.WantCaptureKeyboard)
+			break;
 		kbd.OnKeyReleased(static_cast<unsigned char>(wParam));
 		break;
 	case WM_CHAR:
+		if (imio.WantCaptureKeyboard)
+			break;
 		kbd.OnChar(static_cast<unsigned char>(wParam));
 		break;
 	case WM_KILLFOCUS:
@@ -189,7 +193,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 
 		/*********************************MOUSE MESSAGE***********************************/
 	case WM_MOUSEMOVE:
-	{
+	{	
+		if (imio.WantCaptureKeyboard)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 
 		//클라이언트 영역에 있을경우. 
@@ -218,30 +224,40 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	}
 	case WM_LBUTTONDOWN:
 	{
+		if (imio.WantCaptureKeyboard)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnLeftPressed(pt.x, pt.y);
 		break;
 	}
 	case WM_RBUTTONDOWN:
 	{
+		if (imio.WantCaptureKeyboard)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnRightPressed(pt.x, pt.y);
 		break;
 	}
 	case WM_LBUTTONUP:
 	{
+		if (imio.WantCaptureKeyboard)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnLeftReleased(pt.x, pt.y);
 		break;
 	}
 	case WM_RBUTTONUP:
 	{
+		if (imio.WantCaptureKeyboard)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		mouse.OnLeftReleased(pt.x, pt.y);
 		break;
 	}
 	case WM_MOUSEWHEEL:
 	{
+		if (imio.WantCaptureKeyboard)
+			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 		const int delta = GET_WHEEL_DELTA_WPARAM(wParam);	//이함수는 Wheel 값을 가져오며 120 이상이면 위로휠 120 아래면 아래로휠이다
 		mouse.OnWheelDelta(pt.x, pt.y, delta);
