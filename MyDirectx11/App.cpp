@@ -11,8 +11,6 @@
 #include "Surface.h"
 #include "GDIPlusManager.h"
 #include "imgui/imgui.h"
-#include "imgui/imgui_impl_win32.h"
-#include "imgui/imgui_impl_dx11.h"
 
 GDIPlusManager gdipm;
 
@@ -98,7 +96,13 @@ void App::DoFrame()
 	//wnd.SetTitle(oss.str());
 	//setprecision은  fixed 존재시 정수부+소수부 기준으로 다섯자리 반올림 없을시 소수부 5자리 반올림
 	auto dt = timer.Mark();
-	wnd.Gfx().ClearBuffer(0.07f, 0.0f, 0.12f);
+
+	if (wnd.kbd.KeyIsPressed(VK_SPACE))
+		wnd.Gfx().DisableImgui();
+	else
+		wnd.Gfx().EnableImgui();
+	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);	//BeginFrame에 버퍼클리어등 래핑되어있다.
+
 	for (auto& d : drawables)
 	{
 		//처음보는방법인데 삼항연산자로 업데이트를 종료할수있는게 신기하다
@@ -107,19 +111,10 @@ void App::DoFrame()
 		d->Draw(wnd.Gfx());
 	}
 
-	//imgui
-	// imgui 에서 다른 부분의 프레임함수를 호출 (dx11과 win32)
-	ImGui_ImplDX11_NewFrame();		
-	ImGui_ImplWin32_NewFrame();	
-	ImGui::NewFrame();
-
-	static bool show_demo_window = true;
 	if (show_demo_window)
 	{
 		ImGui::ShowDemoWindow(&show_demo_window);
 	}
-	ImGui::Render();
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData()); 
 
 	wnd.Gfx().EndFrame();
 } 

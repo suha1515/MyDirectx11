@@ -6,6 +6,7 @@
 #include <DirectXMath.h>
 #include "GraphicsThrowMacros.h"
 #include "imgui/imgui_impl_dx11.h"
+#include "imgui/imgui_impl_win32.h"
 
 namespace wrl = Microsoft::WRL;
 //DirectxMath 네임스페이스
@@ -148,6 +149,14 @@ Graphics::Graphics(HWND hWnd)
 }
 void Graphics::EndFrame()
 {
+
+	//imgui Frame End
+	//imgui가 활성화되면 imgui 렌더와 dx11 implement 렌더를 수행한다.
+	if (imguiEnabled)
+	{
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
 	HRESULT hr = 0;
 
 	//화면 표현에는 SawpChain을 사용한다
@@ -171,6 +180,23 @@ void Graphics::EndFrame()
 	}
 }
 
+void Graphics::BeginFrame(float red, float green, float blue) noexcept
+{
+	// imgui begin frame
+	// imgui가 활성화 됬을때 프레임함수 수행.
+	if (imguiEnabled)
+	{
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+	}
+
+	//그후 초기 프레임에서 렌더타겟과 깊이-스텐실 버퍼를 초기화한다.
+	const float color[] = { red,green,blue,1.0f };
+	pContext->ClearRenderTargetView(pTarget.Get(), color);
+	pContext->ClearDepthStencilView(pDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
+}
+
 void Graphics::ClearBuffer(float red, float green, float blue) noexcept
 {
 	const float color[] = { red,green,blue,1.0f };
@@ -191,6 +217,21 @@ void Graphics::SetProjection(DirectX::FXMMATRIX proj) noexcept
 DirectX::XMMATRIX Graphics::GetProjection() const noexcept
 {
 	return projection;
+}
+
+void Graphics::EnableImgui() noexcept
+{
+	imguiEnabled = true;
+}
+
+void Graphics::DisableImgui() noexcept
+{
+	imguiEnabled = false;
+}
+
+bool Graphics::IsImguiEnabled() const noexcept
+{
+	return imguiEnabled;
 }
 
 
