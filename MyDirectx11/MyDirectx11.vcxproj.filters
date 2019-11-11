@@ -132,6 +132,9 @@
     <ClCompile Include="Sheet.cpp">
       <Filter>소스 파일\Drawable</Filter>
     </ClCompile>
+    <ClCompile Include="SkinnedBox.cpp">
+      <Filter>소스 파일\Drawable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -252,6 +255,9 @@
       <Filter>헤더 파일\Bindable</Filter>
     </ClInclude>
     <ClInclude Include="Sheet.h">
+      <Filter>헤더 파일\Drawable</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinnedBox.h">
       <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
   </ItemGroup>

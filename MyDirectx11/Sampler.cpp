@@ -10,7 +10,7 @@ Sampler::Sampler(Graphics& gfx)
 	// 랩핑모드는 텍스쳐가 clamp,wrap등 어떻게 범위밖을 넘어가면 표시할지 설명하며
 	//D3D11_FILTER 열거체를 확인해보자 다양한 설정이있다.
 	D3D11_SAMPLER_DESC samplerDesc = {};
-	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;		//LINEAR,NEAREST,BILINEAR 등등..
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR  ;		//LINEAR,NEAREST,BILINEAR 등등..
 	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
 	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;

@@ -3,6 +3,7 @@
 #include "Melon.h"
 #include "Pyramid.h"
 #include "Sheet.h"
+#include "SkinnedBox.h"
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
@@ -43,6 +44,8 @@ App::App()
 					);
 			case 3:
 				return std::make_unique<Sheet>(gfx, rng, adist, ddist, odist, rdist);
+			case 4:
+				return std::make_unique<SkinnedBox>(gfx, rng, adist, ddist, odist, rdist);
 			default:
 				assert(false && "bad drawable type in factory");
 				return {};
@@ -58,12 +61,11 @@ App::App()
 		std::uniform_real_distribution<float> bdist{ 0.4f,3.0f };
 		std::uniform_int_distribution<int> latdist{ 5,20 };
 		std::uniform_int_distribution<int> longdist{ 10,40 };
-		std::uniform_int_distribution<int> typedist{ 0,3 };
+		std::uniform_int_distribution<int> typedist{ 0,4 };
 	};
-	
-	Factory f(wnd.Gfx());
+
 	drawables.reserve(nDrawables);
-	std::generate_n(std::back_inserter(drawables), nDrawables, f);
+	std::generate_n(std::back_inserter(drawables), nDrawables, Factory{ wnd.Gfx() });
 
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
 	const auto s = Surface::FromFile("Images\\Cat50.png");
@@ -96,6 +98,8 @@ void App::DoFrame()
 	wnd.Gfx().ClearBuffer(0.07f, 0.0f, 0.12f);
 	for (auto& d : drawables)
 	{
+		//처음보는방법인데 삼항연산자로 업데이트를 종료할수있는게 신기하다
+		//IsKeyPressed 로 키가 눌렸는지 확인하고 눌렸으면 0.0f 아니면 delttime전달삼항연산자.. 자주보자..
 		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE)?0.0f:dt);
 		d->Draw(wnd.Gfx());
 	}
