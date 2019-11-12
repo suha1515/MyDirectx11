@@ -129,7 +129,41 @@ void App::DoFrame()
 	cam.SpwanControlWindow();
 	//imgui window to control PointLight;
 	light.SpawnControlWindow();
-	
+
+	//imgui window to open box windows
+	if (ImGui::Begin("Boxes"))
+	{
+		using namespace std::string_literals;
+		const auto preview = comboBoxIndex ? std::to_string(*comboBoxIndex) : "Choose Box"s;
+		if (ImGui::BeginCombo("Box Number", preview.c_str()))
+		{
+			for (int i = 0; i < boxes.size(); ++i)
+			{
+				const bool selected = *comboBoxIndex == i;
+				if (ImGui::Selectable(std::to_string(i).c_str(), selected))
+				{
+					comboBoxIndex = i;
+				}
+				if (selected)
+				{
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
+		}
+		if (ImGui::Button("Spawn Control Window") && comboBoxIndex)
+		{
+			boxControllds.insert(*comboBoxIndex);
+			comboBoxIndex.reset();
+		}
+	}
+	ImGui::End();
+	//imgui box attribute control windows
+	for (auto id : boxControllds)
+	{
+		boxes[id]->SpawnControlWindow(id, wnd.Gfx());
+	}
+
 	//present
 	wnd.Gfx().EndFrame();
 } 
