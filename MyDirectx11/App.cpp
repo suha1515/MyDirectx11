@@ -84,53 +84,47 @@ App::App()
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 3.0f / 4.0f, 0.5f, 40.0f));
 }
 
-int App::Go()
-{
-	while (true)
-	{
-		//optional은 bool을 오버로드하여 만약 값이 있다면 true이다
-		//ProcessMessages 함수에서 PeekMessage 호 출시 WM_QUIT을 만나면 값이있는 msg.wParam을 optional로 반환하였으므로
-		//while문을 빠져나간다
-		if (const auto ecode = Window::ProcessMessages())
-			return *ecode;
-		DoFrame();
-	}
-}
-App::~App()
-{
-}
 void App::DoFrame()
 {
 	//imgui에서 설정한 값으로 dt 조절로 물체의 빠르기를 정한다.
-	auto dt = timer.Mark()* speed_factor;
+	auto dt = timer.Mark() * speed_factor;
 
 	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
 	wnd.Gfx().SetCamera(cam.GetMatrix());
 	//점광원을 파이프라인에 바인딩
-	light.Bind(wnd.Gfx(),cam.GetMatrix());
+	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
 	for (auto& d : drawables)
 	{
-		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE)?0.0f:dt);
+		d->Update(wnd.kbd.KeyIsPressed(VK_SPACE) ? 0.0f : dt);
 		d->Draw(wnd.Gfx());
 	}
 	//광원의 위치를 그린다.
 	light.Draw(wnd.Gfx());
 
+	//imgui window
+	SpawnSimulationWindow();
+	cam.SpwanControlWindow();
+	light.SpawnControlWindow();
+	SpawnBoxWindowManagerWindow();
+	SpawnBoxWindows();
+
+	//present
+	wnd.Gfx().EndFrame();
+}
+void App::SpawnSimulationWindow() noexcept
+{
 	//imgui 윈도우를 만들며 시뮬레이션 스피드를 정한다.
 	if (ImGui::Begin("Simulation Speed"))	//Begin함수가 윈도우를 만들며 윈도우이름이 정해진다 만약 최소화 될경우 false 반환이다(내부 구성이 생기지 않음)
 	{
-		ImGui::SliderFloat("Speed Factor", &speed_factor, 0.0f, 6.0f,"%.4f",3.2f);		//슬라이더를 만드는 Imgui
+		ImGui::SliderFloat("Speed Factor", &speed_factor, 0.0f, 6.0f, "%.4f", 3.2f);		//슬라이더를 만드는 Imgui
 		ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Text("Status: %s", wnd.kbd.KeyIsPressed(VK_SPACE) ? "PAUSED" : "RUNNING");
 	}
 	ImGui::End();//모든 작업이 끝나면 End 함수 호출하여 렌더를 진행한다 기존의 Gui 시스템과 다르게 imgui는 매 프레임마다 gui들을 렌더링하는형식이다 (기존은 정적임)
-	//imgui window to control Camera
-	cam.SpwanControlWindow();
-	//imgui window to control PointLight;
-	light.SpawnControlWindow();
-
-	//imgui window to open box windows
+}
+void App::SpawnBoxWindowManagerWindow() noexcept
+{
 	if (ImGui::Begin("Boxes"))
 	{
 		using namespace std::string_literals;
@@ -158,12 +152,28 @@ void App::DoFrame()
 		}
 	}
 	ImGui::End();
+}
+void App::SpawnBoxWindows() noexcept
+{
 	//imgui box attribute control windows
 	for (auto id : boxControllds)
 	{
 		boxes[id]->SpawnControlWindow(id, wnd.Gfx());
 	}
+}
 
-	//present
-	wnd.Gfx().EndFrame();
-} 
+int App::Go()
+{
+	while (true)
+	{
+		//optional은 bool을 오버로드하여 만약 값이 있다면 true이다
+		//ProcessMessages 함수에서 PeekMessage 호 출시 WM_QUIT을 만나면 값이있는 msg.wParam을 optional로 반환하였으므로
+		//while문을 빠져나간다
+		if (const auto ecode = Window::ProcessMessages())
+			return *ecode;
+		DoFrame();
+	}
+}
+App::~App()
+{
+}
