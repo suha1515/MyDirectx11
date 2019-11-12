@@ -4,7 +4,7 @@
     float3 materialColor;
     float3 ambient;
     float3 diffuseColor;
-    float3 diffuseIntensity;
+    float diffuseIntensity;
     float attConst;
     float attLin;
     float attQuad;
