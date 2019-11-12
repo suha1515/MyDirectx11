@@ -24,7 +24,7 @@ float4 main(float3 worldPos : POSITION, float3 n : NORMAL) : SV_TARGET
 	// 빛 강도
     const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, n));
 	// 최종 색
-    return float4(saturate(diffuse+ambient),1.0f);
+    return float4(saturate(diffuse+ambient)*materialColor,1.0f);
 }
 
 //attenuation 빛 감쇠의 적절한 값을 알고싶으면 아래사이트를 참고할것

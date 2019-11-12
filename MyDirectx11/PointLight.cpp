@@ -12,7 +12,7 @@ void PointLight::SpawnControlWindow() noexcept
 		ImGui::Text("Position");
 		ImGui::SliderFloat("X", &pos.x, -60.f, 60.f, "%.1f");
 		ImGui::SliderFloat("Y", &pos.y, -60.f, 60.f, "%.1f");
-		ImGui::SliderFloat("Z", &pos.y, -60.f, 60.f, "%.1f");
+		ImGui::SliderFloat("Z", &pos.z, -60.f, 60.f, "%.1f");
 		if (ImGui::Button("Reset"))
 		{
 			Reset();
