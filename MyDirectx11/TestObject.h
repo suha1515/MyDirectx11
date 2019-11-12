@@ -1,5 +1,6 @@
 #pragma once
 #include "DrawableBase.h"
+#include "BsMath.h"
 
 template<class T>
 class TestObject : public DrawableBase<T>
@@ -24,12 +25,15 @@ public:
 	{}
 	void Update(float dt) noexcept
 	{
-		roll += droll * dt;
-		pitch += dpitch * dt;
-		yaw += dyaw * dt;
-		theta += dtheta * dt;
-		phi += dphi * dt;
-		chi += dchi * dt;
+		//imgui는 특정 범위에서만 작동하므로
+		// pi의 경우 -2pi~2pi 안에서만 작동한다.
+		// wrap_angle 은 해당 범위로 제한하는 함수이다.
+		roll = wrap_angle(roll + droll * dt);
+		pitch = wrap_angle(pitch + dpitch * dt);
+		yaw = wrap_angle(yaw + dyaw * dt);
+		theta = wrap_angle(theta + dtheta * dt);
+		phi = wrap_angle(phi + dphi * dt);
+		chi = wrap_angle(chi + dchi * dt);
 	}
 	virtual DirectX::XMMATRIX GetTransformXM() const noexcept
 	{
