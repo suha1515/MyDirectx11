@@ -183,6 +183,9 @@
     <ClCompile Include="SolidSphere.cpp">
       <Filter>소스 파일\Drawable</Filter>
     </ClCompile>
+    <ClCompile Include="Cylinder.cpp">
+      <Filter>소스 파일\Drawable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -347,6 +350,9 @@
     <ClInclude Include="TestObject.h">
       <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
+    <ClInclude Include="Cylinder.h">
+      <Filter>헤더 파일\Drawable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MyDirectx11.rc">
@@ -398,6 +404,9 @@
       <Filter>98.Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SolidPS.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="IndexPhongPS.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
   </ItemGroup>
