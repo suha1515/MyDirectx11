@@ -15,7 +15,8 @@ public:
 		std::uniform_real_distribution<float>& bdist,
 		DirectX::XMFLOAT3 material);
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
-	void SpawnControlWindow(int id, Graphics& gfx) noexcept;
+	//박스 닫기를 위해 bool 반환
+	bool SpawnControlWindow(int id, Graphics& gfx) noexcept;
 private:
 	void SyncMaterial(Graphics& gfx) noexcept(!IS_DEBUG);
 private:

@@ -155,10 +155,16 @@ void App::SpawnBoxWindowManagerWindow() noexcept
 }
 void App::SpawnBoxWindows() noexcept
 {
-	//imgui box attribute control windows
-	for (auto id : boxControllds)
+	for (auto i = boxControllds.begin(); i != boxControllds.end(); )
 	{
-		boxes[id]->SpawnControlWindow(id, wnd.Gfx());
+		if (!boxes[*i]->SpawnControlWindow(*i, wnd.Gfx()))
+		{
+			i = boxControllds.erase(i);
+		}
+		else
+		{
+			i++;
+		}
 	}
 }
 
