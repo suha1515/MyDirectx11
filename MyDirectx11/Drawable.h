@@ -15,6 +15,17 @@ public:
 	virtual void Update(float dt) noexcept = 0;
 	virtual ~Drawable() = default;
 protected:
+	//Bindable 객체를 조회하기위한 템플릿
+	template<class T>
+	T* QueryBindable() noexcept
+	{
+		for (auto& pb : binds)
+		{
+			if (auto pt = dynamic_cast<T*>(pb.get()))
+				return pt;
+		}
+		return nullptr;
+	}
 	void AddBind(std::unique_ptr<Bindable> bind)noexcept;
 	void AddIndexBuffer(std::unique_ptr<class IndexBuffer> ibuf) noexcept(!IS_DEBUG);
 	
