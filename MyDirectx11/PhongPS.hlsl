@@ -27,7 +27,7 @@ float4 main(float3 worldPos : POSITION, float3 n : NORMAL) : SV_TARGET
 	//Á¤Á¡ºÎÅÍ ±¤¿ø±îÁöÀÇ ¹æÇâº¤ÅÍ
     const float3 dirToL = vToL / distToL;
 	//***Á¡±¤¿ø***//
-    // ºû ¼¯±â
+    // ºû °¨¼âÄ¡ Á¤ÇÏ±â
     const float att = 1.0f / (attConst + attLin * distToL + attQuad * (distToL * distToL));
 	// ºû °­µµ
     const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, n));
