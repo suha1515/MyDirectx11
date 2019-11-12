@@ -35,10 +35,10 @@ float4 main(float3 worldPos : POSITION, float3 n : NORMAL) : SV_TARGET
 
     //***정반사***//
     //빛벡터에 대한 반사벡터
-    const float3 w = n * dot(dirToL, n);
-    const float3 r = w * 2.0f - dirToL;
+    const float3 w = n * dot(vToL, n);
+    const float3 r = w * 2.0f - vToL;
     //시야벡터와 빛반사벡터 사이의 각도를 기반으로 정반사의 강도를 제곱수와 함께 구한다
-    const float3 specular = (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.0f, dot(normalize(r), normalize(worldPos))), specularPower);
+    const float3 specular = (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(worldPos))), specularPower);
     //************//
 
 	// 최종 색

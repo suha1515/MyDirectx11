@@ -11,11 +11,11 @@ TransformCbuf::TransformCbuf(Graphics& gfx, const Drawable& parent,UINT slot)
 void TransformCbuf::Bind(Graphics& gfx) noexcept
 {
 	//해당 객체의 트랜스폼을 가져와 상수버퍼를 만들고 바인딩한다.
-	const auto model = parent.GetTransformXM();
+	const auto modelView = parent.GetTransformXM()*gfx.GetCamera();
 	const Transforms tf = {
-		DirectX::XMMatrixTranspose(model),
+		DirectX::XMMatrixTranspose(modelView),
 		DirectX::XMMatrixTranspose(
-			model *
+			modelView *
 			gfx.GetCamera() *
 			gfx.GetProjection()
 		)
