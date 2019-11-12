@@ -25,11 +25,17 @@ public:
 private:
 	struct PointLightCBuf
 	{
-		DirectX::XMFLOAT3 pos;		//광원의 위치
-		float padding;				//패딩값
+		DirectX::XMFLOAT3 pos;			//광원의 위치
+		DirectX::XMFLOAT3 material;		//머터리얼
+		DirectX::XMFLOAT3 ambient;		//주변광
+		DirectX::XMFLOAT3 diffuseColor; //분산광
+		float	diffuseIntensity;
+		float	attConst;
+		float	attLin;
+		float	attQuad;
 	};
 private:
-	DirectX::XMFLOAT3 pos = { 0.0f,0.0f,0.0f };			//광원의 위치
+	PointLightCBuf		cbData;							//광원 상수버퍼
 	mutable SolidSphere mesh;							//월드에서 광원의 시각화를 위한 구체
 	mutable PixelConstantBuffer<PointLightCBuf> cbuf;	//픽쉘세이더 상수버퍼에 들어갈 값
 };
