@@ -344,6 +344,9 @@
     <ClInclude Include="SolidSphere.h">
       <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
+    <ClInclude Include="TestObject.h">
+      <Filter>헤더 파일\Drawable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MyDirectx11.rc">
