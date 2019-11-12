@@ -1,11 +1,11 @@
 #include "TransformCbuf.h"
 
-TransformCbuf::TransformCbuf(Graphics& gfx, const Drawable& parent)
+TransformCbuf::TransformCbuf(Graphics& gfx, const Drawable& parent,UINT slot)
 	:parent(parent)
 {
 	//정점 쉐이더에 전달할 행렬이므로 정점쉐이더 상수버퍼를 만든다.
 	if (!pVcbuf)
-		pVcbuf = std::make_unique<VertexConstantBuffer<Transforms>>(gfx);
+		pVcbuf = std::make_unique<VertexConstantBuffer<Transforms>>(gfx, slot);
 }
 
 void TransformCbuf::Bind(Graphics& gfx) noexcept

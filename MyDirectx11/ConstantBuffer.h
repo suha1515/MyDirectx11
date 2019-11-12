@@ -25,7 +25,8 @@ public:
 	}
 	//상수버퍼 생성자
 	//버퍼의 용도를 정의하는 구조체로 새로운 버퍼를 만들고 해당 내용을 D3D11_SUBRESOURCE_DATA를 이용하여 전달한다.
-	ConstantBuffer(Graphics& gfx, const T& consts)
+	ConstantBuffer(Graphics& gfx, const T& consts,UINT slot = 0u)
+		:slot(slot)
 	{
 		INFOMAN(gfx);
 
@@ -42,7 +43,8 @@ public:
 		GFX_THROW_INFO(GetDevice(gfx)->CreateBuffer(&cbd, &csd, &pConstantBuffer));
 	}
 	//데이터 없이 버퍼만 만든다.
-	ConstantBuffer(Graphics& gfx)
+	ConstantBuffer(Graphics& gfx, UINT slot = 0u)
+		:slot(slot)
 	{
 		INFOMAN(gfx);
 
@@ -57,6 +59,7 @@ public:
 	}
 protected:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> pConstantBuffer;
+	UINT	slot;
 };
 
 
@@ -65,13 +68,14 @@ template<typename T>
 class VertexConstantBuffer : public ConstantBuffer<T>
 {
 	using ConstantBuffer<T>::pConstantBuffer;
+	using ConstantBuffer<T>::slot;
 	using Bindable::GetContext;
 public:
 	using ConstantBuffer<T>::ConstantBuffer;
 	//부모로 ConstantBuffer의 생성자가 먼저 호출된후 디바이스에서 VSSetConstantBuffer 호출로 정점쉐이더에 상수버퍼를 바인딩한다.
 	void Bind(Graphics& gfx) noexcept override
 	{
-		GetContext(gfx)->VSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+		GetContext(gfx)->VSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 	}
 };
 //픽셀 쉐이더 전용 상수버퍼 템플릿.
@@ -79,13 +83,14 @@ template<typename T>
 class PixelConstantBuffer : public ConstantBuffer<T>
 {
 	using ConstantBuffer<T>::pConstantBuffer;
+	using ConstantBuffer<T>::slot;
 	using Bindable::GetContext;
 public:
 	using ConstantBuffer<T>::ConstantBuffer;
 	//부모로 ConstantBuffer의 생성자가 먼저 호출된후 디바이스에서 VSSetConstantBuffer 호출로 픽셀쉐이더에 상수버퍼를 바인딩한다.
 	void Bind(Graphics& gfx) noexcept override
 	{
-		GetContext(gfx)->PSSetConstantBuffers(0u, 1u, pConstantBuffer.GetAddressOf());
+		GetContext(gfx)->PSSetConstantBuffers(slot, 1u, pConstantBuffer.GetAddressOf());
 	}
 };
 
