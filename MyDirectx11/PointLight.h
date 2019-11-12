@@ -21,7 +21,7 @@ public:
 
 	//광원 시각화 구체를 위한 Draw,Bind
 	void Draw(Graphics& gfx) const noexcept (!IS_DEBUG);
-	void Bind(Graphics& gfx) const noexcept;
+	void Bind(Graphics& gfx, DirectX::FXMMATRIX view) const noexcept;
 private:
 	// 상수버퍼를 넘길때 hlsl 쉐이더에서는 해당 변수사이에 padding 값이 있다고 가정하고받는다
 	// 하지만 우리의 구조체는 패딩값없이 바로붙어있으므로 hlsl에서 작은값이 왔다고 에러 메시지를 보내게된다

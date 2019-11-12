@@ -70,7 +70,7 @@ void App::DoFrame()
 	wnd.Gfx().BeginFrame(0.07f, 0.0f, 0.12f);
 	wnd.Gfx().SetCamera(cam.GetMatrix());
 	//점광원을 파이프라인에 바인딩
-	light.Bind(wnd.Gfx());
+	light.Bind(wnd.Gfx(),cam.GetMatrix());
 
 	for (auto& d : drawables)
 	{
@@ -83,7 +83,7 @@ void App::DoFrame()
 	//imgui 윈도우를 만들며 시뮬레이션 스피드를 정한다.
 	if (ImGui::Begin("Simulation Speed"))	//Begin함수가 윈도우를 만들며 윈도우이름이 정해진다 만약 최소화 될경우 false 반환이다(내부 구성이 생기지 않음)
 	{
-		ImGui::SliderFloat("Speed Factor", &speed_factor, 0.0f, 4.0f);		//슬라이더를 만드는 Imgui
+		ImGui::SliderFloat("Speed Factor", &speed_factor, 0.0f, 6.0f,"%.4f",3.2f);		//슬라이더를 만드는 Imgui
 		ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Text("Status: %s", wnd.kbd.KeyIsPressed(VK_SPACE) ? "PAUSED" : "RUNNING");
 	}
