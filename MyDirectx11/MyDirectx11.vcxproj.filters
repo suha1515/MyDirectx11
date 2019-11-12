@@ -409,5 +409,11 @@
     <FxCompile Include="IndexPhongPS.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="BlendedPhongVS.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="BlendedPhongPS.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
