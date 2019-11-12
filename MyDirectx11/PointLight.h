@@ -23,12 +23,17 @@ public:
 	void Draw(Graphics& gfx) const noexcept (!IS_DEBUG);
 	void Bind(Graphics& gfx) const noexcept;
 private:
+	// 상수버퍼를 넘길때 hlsl 쉐이더에서는 해당 변수사이에 padding 값이 있다고 가정하고받는다
+	// 하지만 우리의 구조체는 패딩값없이 바로붙어있으므로 hlsl에서 작은값이 왔다고 에러 메시지를 보내게된다
+	// 이경우 구조체 변수사이에 패딩 변수를 넣거나 alignas 키워드를 사용하여 해당 변수사이에 패딩값을 넣자
+
+	//float3 의 경우 hlsl 에서 16패딩값을 가지고 있다고 가정할것이다. 그냥 float은 되는듯
 	struct PointLightCBuf
 	{
-		DirectX::XMFLOAT3 pos;			//광원의 위치
-		DirectX::XMFLOAT3 material;		//머터리얼
-		DirectX::XMFLOAT3 ambient;		//주변광
-		DirectX::XMFLOAT3 diffuseColor; //분산광
+		alignas(16)DirectX::XMFLOAT3 pos;			//광원의 위치
+		alignas(16)DirectX::XMFLOAT3 material;		//머터리얼
+		alignas(16)DirectX::XMFLOAT3 ambient;		//주변광
+		alignas(16)DirectX::XMFLOAT3 diffuseColor; //분산광
 		float	diffuseIntensity;
 		float	attConst;
 		float	attLin;
