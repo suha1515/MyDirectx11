@@ -68,13 +68,15 @@ AssetTest::AssetTest(Graphics& gfx, std::mt19937& rng, std::uniform_real_distrib
 		AddStaticBind(std::move(pvs));
 
 		AddStaticBind(std::make_unique<PixelShader>(gfx, L"PhongPS.cso"));
-
-		const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
+		/*const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
 		{
 			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
 			{ "Normal",0,DXGI_FORMAT_R32G32B32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
-		};
-		AddStaticBind(std::make_unique<InputLayout>(gfx, ied, pvsbc));
+		};*/
+
+		// 기존에 위처럼 레이아웃을 만들어서 전달하지않는다. 이제 동적으로 바뀌어도 바뀌는대로
+		// 새롭게 입력 레이아웃을 구성하기때문이다.  물론 쉐이더에서도 동적으로 바뀌어야하는 이는 나중에 진행할 것이다.
+		AddStaticBind(std::make_unique<InputLayout>(gfx,vbuf.GetLayout().GetD3DLayout(),pvsbc));
 
 		AddStaticBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
