@@ -76,7 +76,7 @@ public:
 			case Float4Color:
 				return sizeof(XMFLOAT3);
 			case BGRAColor:
-				return sizeof(unsigned int);
+				return sizeof(::BGRAColor);
 			}
 			assert("Invalid element type" && false);
 			return 0u;
@@ -217,7 +217,7 @@ public:
 			assert("Bad element type" && false);
 		}
 	}
-private:
+protected:
 	Vertex(char* pData, const VertexLayout& layout) noexcept(!IS_DEBUG)
 		:
 		pData(pData),
@@ -225,6 +225,7 @@ private:
 	{
 		assert(pData != nullptr);
 	}
+private:
 	// 이 템플릿함수는 파라매터 팩을 사용하는 함수다 즉
 	// 우리가 선언한 정점버퍼에서는 정점레이아웃이 설명하는 정점을 넣을것인데.
 	// 정점버퍼에서는 다양한 정보를 가진 정점이 될것이다 위치값이올수도잇고 법선값을 가지고 있을수있다
@@ -283,6 +284,29 @@ private:
 	char* pData = nullptr;
 	const VertexLayout& layout;
 };
+
+//ConstVertex
+/*
+	기존 버텍스와 달리 상수화된 클래스
+	멤버변수로 버텍스를 가지고 있다.
+*/
+
+class ConstVertex
+{
+public:
+	ConstVertex(const Vertex& v) noexcept(!IS_DEBUG)
+		:
+		vertex(v)
+	{}
+	template<VertexLayout::ElementType Type>
+	const auto& Attr() const noexcept(!IS_DEBUG)
+	{
+		return const_cast<Vertex&>(vertex).Attr<Type>();
+	}
+private:
+	Vertex vertex;
+};
+
 // VertexBuffer
 /*
 	정점 버퍼 클래스 실제 정점의 정보를 가지고있는 클래스로
@@ -333,6 +357,18 @@ public:
 	{
 		assert(i < Size());
 		return Vertex{ buffer.data() + layout.Size() * i,layout };
+	}
+	ConstVertex Back() const noexcept(!IS_DEBUG)
+	{
+		return const_cast<VertexBuffer*>(this)->Back();
+	}
+	ConstVertex Front() const noexcept(!IS_DEBUG)
+	{
+		return const_cast<VertexBuffer*>(this)->Front();
+	}
+	ConstVertex operator[](size_t i) const noexcept(!IS_DEBUG)
+	{
+		return const_cast<VertexBuffer&>(*this)[i];
 	}
 private:
 	std::vector<char> buffer;			//모든 정점들의 바이트 데이터를 담는 컨테이너
