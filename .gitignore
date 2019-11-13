@@ -66,6 +66,7 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
+!MyDirectx11/Models/*obj
 *.iobj
 *.pch
 *.pdb
