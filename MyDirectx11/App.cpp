@@ -11,6 +11,10 @@
 #include "GDIPlusManager.h"
 #include "imgui/imgui.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 namespace dx = DirectX;
 
 GDIPlusManager gdipm;
@@ -18,6 +22,12 @@ GDIPlusManager gdipm;
 App::App()
 	:wnd(800,600,"My Window"),light(wnd.Gfx())
 {
+	Assimp::Importer imp;
+	auto model = imp.ReadFile("models\\suzanne.obj",
+		aiProcess_Triangulate |
+		aiProcess_JoinIdenticalVertices
+	);
+
 	class Factory
 	{
 	public:
