@@ -17,7 +17,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include "VertexLayout.h"
+#include "Vertex.h"
 
 namespace dx = DirectX;
 
@@ -46,6 +46,8 @@ void f()
 	auto tex = vb[1].Attr<VertexLayout::Texture2D>();
 	vb.Back().Attr<VertexLayout::Position3D>().z = 420.0f;
 	pos = vb.Back().Attr<VertexLayout::Position3D>();
+	const auto& cvb = vb;
+	pos = cvb[1].Attr<VertexLayout::Position3D>();
 }
 
 App::App()
