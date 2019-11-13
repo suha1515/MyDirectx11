@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
-#include <DirectXMath.h>
 #include <type_traits>
+#include "Graphics.h"
 
 namespace MyVertex
 {
@@ -40,6 +40,52 @@ namespace MyVertex
 			Float3Color,	//컬러
 			Float4Color,
 			BGRAColor,
+			Count,
+		};
+		//템플릿 기법으로 기존에 레이아웃을 좀더 간편하게 정리한다
+		//템플릿의 특수화를 이용하여 Map<ElementType>에 해당하는 구조체멤버들을 제공한다.
+		template<ElementType> struct Map;
+		template<> struct Map<Position2D>
+		{
+			using SysType = DirectX::XMFLOAT2;
+			DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32_FLOAT;
+			const char* semantic = "Position";
+		};
+		template<> struct Map<Position3D>
+		{
+			using SysType = DirectX::XMFLOAT3;
+			DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+			const char* semantic = "Position";
+		};
+		template<> struct Map<Texture2D>
+		{
+			using SysType = DirectX::XMFLOAT2;
+			DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32_FLOAT;
+			const char* semantic = "Texcoord";
+		};
+		template<> struct Map<Normal>
+		{
+			using SysType = DirectX::XMFLOAT3;
+			DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+			const char* semantic = "Normal";
+		};
+		template<> struct Map<Float3Color>
+		{
+			using SysType = DirectX::XMFLOAT3;
+			DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+			const char* semantic = "Color";
+		};
+		template<> struct Map<Float4Color>
+		{
+			using SysType = DirectX::XMFLOAT4;
+			DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
+			const char* semantic = "Color";
+		};
+		template<> struct Map<BGRAColor>
+		{
+			using SysType = MyVertex::BGRAColor;
+			DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+			const char* semantic = "Color";
 		};
 		class Element
 		{
@@ -59,26 +105,29 @@ namespace MyVertex
 			{
 				return SizeOf(type);
 			}
-			//원소의 종류에따라 각기 다른 크기를 반환한다.
+
 			static constexpr size_t SizeOf(ElementType type) noexcept(!IS_DEBUG)
 			{
+				//기존의 스위치문과 다르게 템플릿의 특수화를통해
+				//원하는 레이아웃의 정보를 템플릿화하여 해당 타입을전달한다
+				//이런경우 직접 시스템타입을 일일히 적을필요하없어 실수의 여지가 줄어든다.
 				using namespace DirectX;
 				switch (type)
 				{
 				case Position2D:
-					return sizeof(XMFLOAT2);
+					return sizeof(Map<Position2D>::SysType);
 				case Position3D:
-					return sizeof(XMFLOAT3);
+					return sizeof(Map<Position3D>::SysType);
 				case Texture2D:
-					return sizeof(XMFLOAT2);
+					return sizeof(Map<Texture2D>::SysType);
 				case Normal:
-					return sizeof(XMFLOAT3);
+					return sizeof(Map<Normal>::SysType);
 				case Float3Color:
-					return sizeof(XMFLOAT3);
+					return sizeof(Map<Float3Color>::SysType);
 				case Float4Color:
-					return sizeof(XMFLOAT3);
+					return sizeof(Map<Float4Color>::SysType);
 				case BGRAColor:
-					return sizeof(MyVertex::BGRAColor);
+					return sizeof(Map<BGRAColor>::SysType);
 				}
 				assert("Invalid element type" && false);
 				return 0u;
@@ -111,11 +160,11 @@ namespace MyVertex
 		{
 			return elements[i];
 		}
-		//레이아웃을 생성할때 템플릿 타입으로넘겨 해당 원소를 넣는다.
-		template<ElementType Type>
-		VertexLayout& Append() noexcept(!IS_DEBUG)
+		//이전에 템플릿의 타입을 기반으로 전달하였지만
+		//이제는 Enum 열거체로 전달
+		VertexLayout& Append(ElementType type) noexcept(!IS_DEBUG)
 		{
-			elements.emplace_back(Type, Size());
+			elements.emplace_back(type, Size());
 			return *this;
 		}
 
@@ -148,72 +197,40 @@ namespace MyVertex
 		//Position2D 원소의 첫주소를 찾아서 반환한다.
 		auto& Attr() noexcept(!IS_DEBUG)
 		{
-			using namespace DirectX;
-			const auto& element = layout.Resolve<Type>();		//element 오브젝트는 Resolve 호출로 해당 Type에대한 정보를 가지게된다
-			auto pAttribute = pData + element.GetOffset();		//pData 첫주소에서 + 오프셋만큼 더해지면 해당 원소의 주소가 나온다	//즉 레이아웃에서는 어떤구조로 정점이 구성되는지 알것이며
-																//그 구조에서의 오프셋이 존재하니 처음위치+오프셋은 해당원소의 첫주소가나오게 된다.
-			if constexpr (Type == VertexLayout::Position2D)
-			{
-				return *reinterpret_cast<XMFLOAT2*>(pAttribute);	//해당 원소의 처음 주소를 얻으면 캐스팅으로 원래 의도한 자료형으로 바꾼다
-			}
-			else if constexpr (Type == VertexLayout::Position3D)
-			{
-				return *reinterpret_cast<XMFLOAT3*>(pAttribute);
-			}
-			else if constexpr (Type == VertexLayout::Texture2D)
-			{
-				return *reinterpret_cast<XMFLOAT2*>(pAttribute);
-			}
-			else if constexpr (Type == VertexLayout::Normal)
-			{
-				return *reinterpret_cast<XMFLOAT3*>(pAttribute);
-			}
-			else if constexpr (Type == VertexLayout::Float3Color)
-			{
-				return *reinterpret_cast<XMFLOAT3*>(pAttribute);
-			}
-			else if constexpr (Type == VertexLayout::Float4Color)
-			{
-				return *reinterpret_cast<XMFLOAT4*>(pAttribute);
-			}
-			else if constexpr (Type == VertexLayout::BGRAColor)
-			{
-				return *reinterpret_cast<BGRAColor*>(pAttribute);
-			}
-			else
-			{
-				assert("Bad element type" && false);
-				return *reinterpret_cast<char*>(pAttribute);
-			}
+			//기존에 템플릿에 들어온 Type에 따라 Attr을 사용하여 버퍼의 정점정보에 접근할떄
+			//많은 비교문을 통해 캐스팅반환을 하였다 하지만 템플릿 특수화로 Map에 타입만전달하면
+			//해당 정보에대한 시스템타입으로 캐스팅할 수 있어 코드절약이 되었다.
+			auto pAttribute = pData + layout.Resolve<Type>().GetOffset();
+			return * reinterpret_cast<typename VertexLayout::Map<Type>::SysType*>(pAttribute);
 		}
 		template<typename T>
 		void SetAttributeByIndex(size_t i, T&& val) noexcept(!IS_DEBUG)
 		{
-			using namespace DirectX;
 			const auto& element = layout.ResolveByIndex(i);
 			auto pAttribute = pData + element.GetOffset();
+			//이 스위치문도 시스템타입을 넘기지않아 타입이 어긋날 걱정이 없어졌다.
 			switch (element.GetType())
 			{
 			case VertexLayout::Position2D:
-				SetAttribute<XMFLOAT2>(pAttribute, std::forward<T>(val));
+				SetAttribute<VertexLayout::Position2D>(pAttribute, std::forward<T>(val));
 				break;
 			case VertexLayout::Position3D:
-				SetAttribute<XMFLOAT3>(pAttribute, std::forward<T>(val));
+				SetAttribute<VertexLayout::Position3D>(pAttribute, std::forward<T>(val));
 				break;
 			case VertexLayout::Texture2D:
-				SetAttribute<XMFLOAT2>(pAttribute, std::forward<T>(val));
+				SetAttribute<VertexLayout::Texture2D>(pAttribute, std::forward<T>(val));
 				break;
 			case VertexLayout::Normal:
-				SetAttribute<XMFLOAT3>(pAttribute, std::forward<T>(val));
+				SetAttribute<VertexLayout::Normal>(pAttribute, std::forward<T>(val));
 				break;
 			case VertexLayout::Float3Color:
-				SetAttribute<XMFLOAT3>(pAttribute, std::forward<T>(val));
+				SetAttribute<VertexLayout::Float3Color>(pAttribute, std::forward<T>(val));
 				break;
 			case VertexLayout::Float4Color:
-				SetAttribute<XMFLOAT4>(pAttribute, std::forward<T>(val));
+				SetAttribute<VertexLayout::Float4Color>(pAttribute, std::forward<T>(val));
 				break;
 			case VertexLayout::BGRAColor:
-				SetAttribute<BGRAColor>(pAttribute, std::forward<T>(val));
+				SetAttribute<VertexLayout::BGRAColor>(pAttribute, std::forward<T>(val));
 				break;
 			default:
 				assert("Bad element type" && false);
@@ -267,11 +284,12 @@ namespace MyVertex
 			SetAttributeByIndex(i + 1, std::forward<Rest>(rest)...);	//증가시켜줘야 다음 원소를 가르키게된다.
 		}
 		// helper to reduce code duplication in SetAttributeByIndex
-		template<typename Dest, typename Src>
-		void SetAttribute(char* pAttribute, Src&& val) noexcept(!IS_DEBUG)
+		template<VertexLayout::ElementType DestLayoutType, typename SrcType>
+		void SetAttribute(char* pAttribute, SrcType&& val) noexcept(!IS_DEBUG)
 		{
+			using Dest = typename VertexLayout::Map<DestLayoutType>::SysType;
 			//is_assignable 은 src에서 Dest로 할당가능여부를 체크한다.
-			if constexpr (std::is_assignable<Dest, Src>::value)
+			if constexpr (std::is_assignable<Dest, SrcType>::value)
 			{
 				//첫번째 레이아웃이 Position3D 이고 {0.0f,0.0f,0.0f}를 넘겼다면 
 				//위에 스위치문에서 검사하여 정보를 버퍼주소에 기록한다.
@@ -336,7 +354,7 @@ namespace MyVertex
 		{
 			return buffer.size() / layout.Size();
 		}
-		//버퍼의 사이즈를 반환한다.
+		//버퍼의 사이즈를 반환한다. 
 		size_t SizeBytes() const noexcept(!IS_DEBUG)
 		{
 			return buffer.size();

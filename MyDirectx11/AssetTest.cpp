@@ -17,10 +17,11 @@ AssetTest::AssetTest(Graphics& gfx, std::mt19937& rng, std::uniform_real_distrib
 	{
 
 		using MyVertex::VertexLayout;
+		//이전에는 타입을 전달하였지만 이제 열거체로만 레이아웃지정이 가능하다.
 		MyVertex::VertexBuffer vbuf(std::move(
 			VertexLayout{}
-			.Append<VertexLayout::Position3D>()
-			.Append<VertexLayout::Normal>()
+			.Append(VertexLayout::Position3D)
+			.Append(VertexLayout::Normal)
 		));
 
 		//assimp를 이용하여 모델 불러오기
