@@ -359,6 +359,9 @@
     <ClInclude Include="AssetTest.h">
       <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
+    <ClInclude Include="VertexLayout.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MyDirectx11.rc">
