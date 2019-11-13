@@ -331,9 +331,15 @@ namespace MyVertex
 		{
 			return layout;
 		}
+		//정점의 개수를반환한다.
 		size_t Size() const noexcept(!IS_DEBUG)
 		{
 			return buffer.size() / layout.Size();
+		}
+		//버퍼의 사이즈를 반환한다.
+		size_t SizeBytes() const noexcept(!IS_DEBUG)
+		{
+			return buffer.size();
 		}
 		//새로운 정점을 생성하여 컨테이너끝에 넣을수 있도록한다.
 		template<typename ...Params>
