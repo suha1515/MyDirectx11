@@ -4,6 +4,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include "Vertex.h"
 
 AssetTest::AssetTest(Graphics& gfx, std::mt19937& rng, std::uniform_real_distribution<float>& adist, std::uniform_real_distribution<float>& ddist, std::uniform_real_distribution<float>& odist, std::uniform_real_distribution<float>& rdist, DirectX::XMFLOAT3 material, float scale)
 	:
@@ -14,11 +15,14 @@ AssetTest::AssetTest(Graphics& gfx, std::mt19937& rng, std::uniform_real_distrib
 	// 정적변수들이 초기화 되지 않았으면
 	if (!IsStaticInitialized())
 	{
-		struct Vertex
-		{
-			dx::XMFLOAT3 pos;
-			dx::XMFLOAT3 n;
-		};
+
+		using MyVertex::VertexLayout;
+		MyVertex::VertexBuffer vbuf(std::move(
+			VertexLayout{}
+			.Append<VertexLayout::Position3D>()
+			.Append<VertexLayout::Normal>()
+		));
+
 		//assimp를 이용하여 모델 불러오기
 		Assimp::Importer imp;
 		const auto pModel = imp.ReadFile("models\\suzanne.obj",
@@ -31,15 +35,13 @@ AssetTest::AssetTest(Graphics& gfx, std::mt19937& rng, std::uniform_real_distrib
 		//모델은 메쉬배열로 이루어져있는데 ->mMeshed[] 를 사용하여 메쉬에 접근할 수 있다.
 		const auto pMesh = pModel->mMeshes[0];
 
-		std::vector<Vertex> vertices;
-		vertices.reserve(pMesh->mNumVertices);
 		//각 정점또한 ->mVerticse[] 로 접근 ->mNormals 는 노말접근
 		for (unsigned int i = 0; i < pMesh->mNumVertices; i++)
 		{
-			vertices.push_back({
-				{ pMesh->mVertices[i].x * scale,pMesh->mVertices[i].y * scale,pMesh->mVertices[i].z * scale },
+			vbuf.EmplaceBack(
+				dx::XMFLOAT3{ pMesh->mVertices[i].x * scale,pMesh->mVertices[i].y * scale,pMesh->mVertices[i].z * scale },
 				*reinterpret_cast<dx::XMFLOAT3*>(&pMesh->mNormals[i])
-				});
+			);
 		}
 
 		std::vector<unsigned short> indices;
@@ -56,7 +58,7 @@ AssetTest::AssetTest(Graphics& gfx, std::mt19937& rng, std::uniform_real_distrib
 			indices.push_back(face.mIndices[2]);
 		}
 
-		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vertices));
+		AddStaticBind(std::make_unique<VertexBuffer>(gfx, vbuf));
 
 		AddStaticIndexBuffer(std::make_unique<IndexBuffer>(gfx, indices));
 
