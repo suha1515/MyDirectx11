@@ -2,7 +2,7 @@
 #include "Graphics.h"
 #include "SolidSphere.h"
 #include "ConstantBuffer.h"
-
+#include "ConditionalNoexcept.h"
 // 점광원 클래스
 /*
 	월드에서 점광원을 나타내는 클래스이다
@@ -20,7 +20,7 @@ public:
 	void Reset() noexcept;
 
 	//광원 시각화 구체를 위한 Draw,Bind
-	void Draw(Graphics& gfx) const noexcept (!IS_DEBUG);
+	void Draw(Graphics& gfx) const noxnd;
 	void Bind(Graphics& gfx, DirectX::FXMMATRIX view) const noexcept;
 private:
 	// 상수버퍼를 넘길때 hlsl 쉐이더에서는 해당 변수사이에 padding 값이 있다고 가정하고받는다
@@ -41,6 +41,6 @@ private:
 private:
 	PointLightCBuf		cbData;							//광원 상수버퍼
 	mutable SolidSphere mesh;							//월드에서 광원의 시각화를 위한 구체
-	mutable PixelConstantBuffer<PointLightCBuf> cbuf;	//픽쉘세이더 상수버퍼에 들어갈 값
+	mutable Bind::PixelConstantBuffer<PointLightCBuf> cbuf;	//픽쉘세이더 상수버퍼에 들어갈 값
 };
 

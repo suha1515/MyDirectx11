@@ -2,17 +2,11 @@
 #include <vector>
 #include <type_traits>
 #include "Graphics.h"
+#include "Color.h"
+#include "ConditionalNoexcept.h"
 
 namespace MyVertex
 {
-	struct BGRAColor
-	{
-		unsigned char a;
-		unsigned char r;
-		unsigned char g;
-		unsigned char b;
-	};
-
 	//VertexLayout
 	/*
 		정점레이아웃을 설명하는 클래스이다.
@@ -84,86 +78,23 @@ namespace MyVertex
 		};
 		template<> struct Map<BGRAColor>
 		{
-			using SysType = MyVertex::BGRAColor;
+			using SysType = ::BGRAColor;
 			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 			static constexpr const char* semantic = "Color";
 		};
 		class Element
 		{
 		public:
-			Element(ElementType type, size_t offset)
-				: type(type), offset(offset)
-			{}
-			size_t GetOffsetAfter() const noexcept(!IS_DEBUG)
-			{
-				return offset + Size();
-			}
-			size_t GetOffset() const
-			{
-				return offset;
-			}
-			size_t Size() const noexcept(!IS_DEBUG)
-			{
-				return SizeOf(type);
-			}
-
-			static constexpr size_t SizeOf(ElementType type) noexcept(!IS_DEBUG)
-			{
-				//기존의 스위치문과 다르게 템플릿의 특수화를통해
-				//원하는 레이아웃의 정보를 템플릿화하여 해당 타입을전달한다
-				//이런경우 직접 시스템타입을 일일히 적을필요하없어 실수의 여지가 줄어든다.
-				using namespace DirectX;
-				switch (type)
-				{
-				case Position2D:
-					return sizeof(Map<Position2D>::SysType);
-				case Position3D:
-					return sizeof(Map<Position3D>::SysType);
-				case Texture2D:
-					return sizeof(Map<Texture2D>::SysType);
-				case Normal:
-					return sizeof(Map<Normal>::SysType);
-				case Float3Color:
-					return sizeof(Map<Float3Color>::SysType);
-				case Float4Color:
-					return sizeof(Map<Float4Color>::SysType);
-				case BGRAColor:
-					return sizeof(Map<BGRAColor>::SysType);
-				}
-				assert("Invalid element type" && false);
-				return 0u;
-			}
-			ElementType GetType() const noexcept
-			{
-				return type;
-			}
-			//동적으로 D3D11 layout을 반환한다.
-			//즉 해당 열거체(시스템 타입) 에 따라 포맷,시맨틱,오프셋과 용도를 자동으로 구조체로 반환한다.
-			D3D11_INPUT_ELEMENT_DESC GetDesc() const noexcept(!IS_DEBUG)
-			{
-				switch (type)
-				{
-				case Position2D:
-					return GenerateDesc<Position2D>(GetOffset());
-				case Position3D:
-					return GenerateDesc<Position3D>(GetOffset());
-				case Texture2D:
-					return GenerateDesc<Texture2D>(GetOffset());
-				case Normal:
-					return GenerateDesc<Normal>(GetOffset());
-				case Float3Color:
-					return GenerateDesc<Float3Color>(GetOffset());
-				case Float4Color:
-					return GenerateDesc<Float4Color>(GetOffset());
-				case BGRAColor:
-					return GenerateDesc<BGRAColor>(GetOffset());
-				}
-				assert("Invalid element type" && false);
-				return { "INVALID",0,DXGI_FORMAT_UNKNOWN,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 };
-			}
+			Element(ElementType type, size_t offset);
+			size_t GetOffsetAfter() const noxnd;
+			size_t GetOffset() const;
+			size_t Size() const noxnd;
+			static constexpr size_t SizeOf(ElementType type) noxnd;
+			ElementType GetType() const noexcept;
+			D3D11_INPUT_ELEMENT_DESC GetDesc() const noxnd;
 		private:
 			template<ElementType type>
-			static constexpr D3D11_INPUT_ELEMENT_DESC GenerateDesc(size_t offset) noexcept(!IS_DEBUG)
+			static constexpr D3D11_INPUT_ELEMENT_DESC GenerateDesc(size_t offset) noxnd
 			{
 				return { Map<type>::semantic,0,Map<type>::dxgiFormat,0,(UINT)offset,D3D11_INPUT_PER_VERTEX_DATA,0 };
 			}
@@ -174,7 +105,7 @@ namespace MyVertex
 	public:
 		//정점 원소를 접근하는 함수. 템플릿 타입으로 넘겨 해당 타입의 상수참조로 반환한다.
 		template<ElementType Type>
-		const Element& Resolve() const noexcept(!IS_DEBUG)
+		const Element& Resolve() const noxnd
 		{
 			for (auto& e : elements)
 			{
@@ -186,40 +117,11 @@ namespace MyVertex
 			assert("Could not resolve element type" && false);
 			return elements.front();
 		}
-		//위 함수와 기능을 똑같지만 인덱스 기반으로 반환한다.
-		const Element& ResolveByIndex(size_t i) const noexcept(!IS_DEBUG)
-		{
-			return elements[i];
-		}
-		//이전에 템플릿의 타입을 기반으로 전달하였지만
-		//이제는 Enum 열거체로 전달
-		VertexLayout& Append(ElementType type) noexcept(!IS_DEBUG)
-		{
-			elements.emplace_back(type, Size());
-			return *this;
-		}
-
-		//전체 정점의 크기를 반환하는 함수.
-		size_t Size() const noexcept(!IS_DEBUG)
-		{
-			return elements.empty() ? 0u : elements.back().GetOffsetAfter();
-		}
-		//원소의 개수를 반환한다.
-		size_t GetElementCount() const noexcept
-		{
-			return elements.size();
-		}
-		//원소들의 레이아웃을 벡터로 반환한다.
-		std::vector<D3D11_INPUT_ELEMENT_DESC> GetD3DLayout() const noexcept(!IS_DEBUG)
-		{
-			std::vector<D3D11_INPUT_ELEMENT_DESC> desc;
-			desc.reserve(GetElementCount());
-			for (const auto& e : elements)
-			{
-				desc.push_back(e.GetDesc());
-			}
-			return desc;
-		}
+		const Element& ResolveByIndex(size_t i) const noxnd;
+		VertexLayout& Append(ElementType type) noxnd;
+		size_t Size() const noxnd;
+		size_t GetElementCount() const noexcept;
+		std::vector<D3D11_INPUT_ELEMENT_DESC> GetD3DLayout() const noxnd;
 	private:
 		std::vector<Element> elements; //정점 원소를 담는 컨테이너
 	};

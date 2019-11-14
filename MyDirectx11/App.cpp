@@ -1,9 +1,5 @@
 #include "App.h"
 //Drawable-------
-#include "Box.h"
-#include "Cylinder.h"
-#include "Pyramid.h"
-#include "SkinnedBox.h"
 #include "AssetTest.h"
 //---------------
 #include <sstream>

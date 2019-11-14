@@ -189,6 +189,9 @@
     <ClCompile Include="AssetTest.cpp">
       <Filter>소스 파일\Drawable</Filter>
     </ClCompile>
+    <ClCompile Include="Vertex.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -259,9 +262,6 @@
     </ClInclude>
     <ClInclude Include="VertexShader.h">
       <Filter>헤더 파일\Bindable</Filter>
-    </ClInclude>
-    <ClInclude Include="BindableBase.h">
-      <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Box.h">
       <Filter>헤더 파일\Drawable</Filter>
@@ -363,6 +363,15 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ConditionalNoexcept.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BindableCommon.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,7 +1,7 @@
 #pragma once
 #include "Drawable.h"
 #include "IndexBuffer.h"
-
+#include "ConditionalNoexcept.h"
 /*
 	기존 큐브 뛰우기 예제에서는 80개의 오브젝트를 만들면서 각강의 버퍼와 쉐이더도 80개였다 \
 	이런방식은 비효율적이며 Bindable 객체를 계속해서 사용할녀석과 각각의 객체마다 다른 Bindable 객체를 나눠야한다
@@ -28,12 +28,11 @@ protected:
 	{
 		return !staticBinds.empty();
 	}
-	static void AddStaticBind(std::unique_ptr<Bindable> bind)noexcept (!IS_DEBUG)
-	{
-		assert("인덱스버퍼를 바인드하기위해서는 이함수를 사용해선 안됩니다" && typeid(*bind) != typeid(IndexBuffer));
+	static void AddStaticBind(std::unique_ptr<Bind::Bindable> bind) noxnd
+		assert("인덱스버퍼를 바인드하기위해서는 이함수를 사용해선 안됩니다" && typeid(*bind) != typeid(Bind::IndexBuffer));
 		staticBinds.push_back(std::move(bind));
 	}
-	void AddStaticIndexBuffer(std::unique_ptr<IndexBuffer> ibuf) noexcept (!IS_DEBUG)
+	void AddStaticIndexBuffer(std::unique_ptr<Bind::IndexBuffer> ibuf) noxnd
 	{
 		assert("Attempting to add index buffer a second time" && pIndexBuffer == nullptr);
 		pIndexBuffer = ibuf.get();
@@ -41,12 +40,12 @@ protected:
 	}
 	//static Bindable 객체중  인덱스 버퍼는 포인터를 추가해야하지만 첫번째 객체말고는 호출할수 없도록 구조가 짜여있다
 	//그런 구조를 해결하기위해 아래 함수를 추가한다. staticBind 객체중 인덱스 객체만 찾고 다시 포인터 호출을 해준다.
-	void SetIndexFromStatic() noexcept (!IS_DEBUG)
+	void SetIndexFromStatic() noxnd
 	{
 		assert("인덱스 버퍼를 두번 추가하려고 시도했습니다." && pIndexBuffer == nullptr);
 		for (const auto& b : staticBinds)
 		{
-			if (const auto p = dynamic_cast<IndexBuffer*>(b.get()))
+			if (const auto p = dynamic_cast<Bind::IndexBuffer*>(b.get()))
 			{
 				pIndexBuffer = p;
 				return;
@@ -55,13 +54,13 @@ protected:
 		assert("정적 바인드 객체들중에 인덱스 버퍼를 찾을 수 없습니다" && pIndexBuffer != nullptr);
 	}
 private:
-	const std::vector < std::unique_ptr<Bindable>> & GetStaticBinds() const noexcept override
+	const std::vector < std::unique_ptr<Bind::Bindable>> & GetStaticBinds() const noexcept override
 	{
 		return staticBinds;
 	}  
 private:
-	static std::vector <std::unique_ptr<Bindable>> staticBinds;
+	static std::vector <std::unique_ptr<Bind::Bindable>> staticBinds;
 };
 
 template<class T>
-std::vector<std::unique_ptr<Bindable>> DrawableBase<T>::staticBinds;
+std::vector<std::unique_ptr<Bind::Bindable>> DrawableBase<T>::staticBinds;

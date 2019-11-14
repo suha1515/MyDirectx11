@@ -3,6 +3,8 @@
 #include "BsException.h"
 #include <assert.h>
 #include <memory>
+#include "ConditionalNoexcept.h"
+
 
 class Surface
 {

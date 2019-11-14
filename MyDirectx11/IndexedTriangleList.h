@@ -27,7 +27,7 @@ public:
 		}
 	}
 	//3정점이 이루는 노멀벡터를 계산하는 함수이다.
-	void SetNormalsIndependentFlat() noexcept(!IS_DEBUG)
+	void SetNormalsIndependentFlat() noxnd
 	{
 		using namespace DirectX;
 		assert(indices.size() % 3 == 0 && indices.size() > 0);
