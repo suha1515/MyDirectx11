@@ -228,10 +228,9 @@ public:
 		return pNode;
 	}
 	//그리기 작업을 수행한다.
-	void Draw(Graphics& gfx) const
+	void Draw(Graphics& gfx,DirectX::FXMMATRIX fransform) const
 	{
-		//루트노드는 항등행렬을 가지면된다.
-		pRoot->Draw(gfx, DirectX::XMMatrixIdentity());
+		pRoot->Draw(gfx, fransform);
 	}
 
 private:

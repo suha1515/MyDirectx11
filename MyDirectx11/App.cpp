@@ -35,16 +35,39 @@ void App::DoFrame()
 	//점광원을 파이프라인에 바인딩
 	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
-	nano.Draw(wnd.Gfx());
+	//모델의 트랜스폼 지정
+	const auto transform = dx::XMMatrixRotationRollPitchYaw(pos.roll, pos.pitch, pos.yaw)
+		* dx::XMMatrixTranslation(pos.x, pos.y, pos.z);
+	nano.Draw(wnd.Gfx(),transform);
+
 	//광원의 위치를 그린다.
 	light.Draw(wnd.Gfx());
 
 	//imgui window
 	cam.SpwanControlWindow();
 	light.SpawnControlWindow();
+	ShowModelWindow();
 
 	//present
 	wnd.Gfx().EndFrame();
+}
+void App::ShowModelWindow()
+{
+	if (ImGui::Begin("Model"))
+	{
+		using namespace std::string_literals;
+
+		ImGui::Text("Orientation");
+		ImGui::SliderAngle("Roll", &pos.roll, -180.f, 180.f);
+		ImGui::SliderAngle("Pitch", &pos.pitch, -180.f, 180.f);
+		ImGui::SliderAngle("Yaw", &pos.yaw, -180.f, 180.f);
+
+		ImGui::Text("Position");
+		ImGui::SliderFloat("X", &pos.x, -20.0f, 20.0f);
+		ImGui::SliderFloat("Y", &pos.x, -20.0f, 20.0f);
+		ImGui::SliderFloat("Z", &pos.x, -20.0f, 20.0f);
+	}
+	ImGui::End();
 }
 int App::Go()
 {
