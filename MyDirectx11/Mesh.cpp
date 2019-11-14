@@ -70,14 +70,22 @@ void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 		pc->Draw(gfx, built);
 	}
 }
-void Node::ShowTree() const noexcept
+void Node::ShowTree(int& nodeIndexTracked, std::optional<int>& selectedIndex) const noexcept
 {
-	// if tree node expanded, recursively render all children
-	if (ImGui::TreeNode(name.c_str()))
+	// nodexIndex 는 gui 트리 노드를 위한 uid 로작동한다. 재귀하면서 증가하게 된다.
+	const int currentNodeIndex = nodeIndexTracked;
+	nodeIndexTracked++;
+	// 최근 노드를 위해 플래그를 세운다.
+	const auto node_flags = ImGuiTreeNodeFlags_OpenOnArrow |
+		((currentNodeIndex == selectedIndex.value_or(-1)) ? ImGuiTreeNodeFlags_Selected : 0) |
+		((childPtrs.size() == 0) ? ImGuiTreeNodeFlags_Leaf : 0);
+	//만약 노드가 확장되면 재귀로 자식들을 그린다.
+	if (ImGui::TreeNodeEx((void*)(intptr_t)currentNodeIndex, node_flags, name.c_str()))
 	{
+		selectedIndex = ImGui::IsItemClicked() ? currentNodeIndex : selectedIndex;
 		for (const auto& pChild : childPtrs)
 		{
-			pChild->ShowTree();
+			pChild->ShowTree(nodeIndexTracked, selectedIndex);
 		}
 		ImGui::TreePop();
 	}
@@ -98,10 +106,12 @@ public:
 	{
 		// window name defaults to "Model"
 		windowName = windowName ? windowName : "Model";
+		//노드 인덱스들과 선택된 노드를 추적하기위해 필요한 변수
+		int nodeIndexTracker = 0;
 		if (ImGui::Begin(windowName))
 		{
 			ImGui::Columns(2, nullptr, true);
-			root.ShowTree();
+			root.ShowTree(nodeIndexTracker,selectedIndex);
 
 			ImGui::NextColumn();
 			ImGui::Text("Orientation");
@@ -121,6 +131,7 @@ public:
 			dx::XMMatrixTranslation(pos.x, pos.y, pos.z);
 	}
 private:
+	std::optional<int> selectedIndex;
 	struct
 	{
 		float roll = 0.0f;
