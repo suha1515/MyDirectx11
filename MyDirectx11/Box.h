@@ -27,7 +27,7 @@ private:
 		float specularPower = 30.0f;
 		float padding[3];
 	}materialConstants;
-	using MaterialCbuf = PixelConstantBuffer<PSMaterialConstant>;
+	using MaterialCbuf = Bind::PixelConstantBuffer<PSMaterialConstant>;
 private:
 	//Model Transform
 	DirectX::XMFLOAT3X3 mt;

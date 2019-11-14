@@ -1,11 +1,11 @@
 #pragma once
 #include "Drawable.h"
 #include "IndexBuffer.h"
-#include "ConditionalNoexcept.h"
+
 /*
 	기존 큐브 뛰우기 예제에서는 80개의 오브젝트를 만들면서 각강의 버퍼와 쉐이더도 80개였다 \
 	이런방식은 비효율적이며 Bindable 객체를 계속해서 사용할녀석과 각각의 객체마다 다른 Bindable 객체를 나눠야한다
-	
+
 	모든 객체에서 공유하는 변수는 static 변수이다 현재 Box 클래스가 Drawable 클래스를 상속받고있으므로
 	해당 static 변수는 많은 Box 클래스 변수들이 공유한다 하지만 Box 클래스에서만 사용해야하난 Drawable의 static변수가 필요한것이다
 	만약 상속받는 다른 Sphere 클래스가 있다고 가정하면 이 클래스 또한 해당 static 변수를 공유한다,
@@ -28,11 +28,12 @@ protected:
 	{
 		return !staticBinds.empty();
 	}
-	static void AddStaticBind(std::unique_ptr<Bind::Bindable> bind) noxnd
+	static void AddStaticBind(std::unique_ptr<Bind::Bindable> bind)noexcept (!IS_DEBUG)
+	{
 		assert("인덱스버퍼를 바인드하기위해서는 이함수를 사용해선 안됩니다" && typeid(*bind) != typeid(Bind::IndexBuffer));
 		staticBinds.push_back(std::move(bind));
 	}
-	void AddStaticIndexBuffer(std::unique_ptr<Bind::IndexBuffer> ibuf) noxnd
+	void AddStaticIndexBuffer(std::unique_ptr<Bind::IndexBuffer> ibuf) noexcept (!IS_DEBUG)
 	{
 		assert("Attempting to add index buffer a second time" && pIndexBuffer == nullptr);
 		pIndexBuffer = ibuf.get();
@@ -40,7 +41,7 @@ protected:
 	}
 	//static Bindable 객체중  인덱스 버퍼는 포인터를 추가해야하지만 첫번째 객체말고는 호출할수 없도록 구조가 짜여있다
 	//그런 구조를 해결하기위해 아래 함수를 추가한다. staticBind 객체중 인덱스 객체만 찾고 다시 포인터 호출을 해준다.
-	void SetIndexFromStatic() noxnd
+	void SetIndexFromStatic() noexcept (!IS_DEBUG)
 	{
 		assert("인덱스 버퍼를 두번 추가하려고 시도했습니다." && pIndexBuffer == nullptr);
 		for (const auto& b : staticBinds)
@@ -54,10 +55,10 @@ protected:
 		assert("정적 바인드 객체들중에 인덱스 버퍼를 찾을 수 없습니다" && pIndexBuffer != nullptr);
 	}
 private:
-	const std::vector < std::unique_ptr<Bind::Bindable>> & GetStaticBinds() const noexcept override
+	const std::vector < std::unique_ptr<Bind::Bindable>>& GetStaticBinds() const noexcept override
 	{
 		return staticBinds;
-	}  
+	}
 private:
 	static std::vector <std::unique_ptr<Bind::Bindable>> staticBinds;
 };

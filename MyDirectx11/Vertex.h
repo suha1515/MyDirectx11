@@ -5,7 +5,7 @@
 #include "Color.h"
 #include "ConditionalNoexcept.h"
 
-namespace MyVertex
+namespace Dvtx
 {
 	//VertexLayout
 	/*
@@ -140,7 +140,7 @@ namespace MyVertex
 		template<VertexLayout::ElementType Type>
 		//템플릿 타입의 위치를 찾아 접근한다. 즉 Poisition2D가 해당 정점 레이아웃에 존재하면
 		//Position2D 원소의 첫주소를 찾아서 반환한다.
-		auto& Attr() noexcept(!IS_DEBUG)
+		auto& Attr() noxnd
 		{
 			//기존에 템플릿에 들어온 Type에 따라 Attr을 사용하여 버퍼의 정점정보에 접근할떄
 			//많은 비교문을 통해 캐스팅반환을 하였다 하지만 템플릿 특수화로 Map에 타입만전달하면
@@ -149,7 +149,7 @@ namespace MyVertex
 			return * reinterpret_cast<typename VertexLayout::Map<Type>::SysType*>(pAttribute);
 		}
 		template<typename T>
-		void SetAttributeByIndex(size_t i, T&& val) noexcept(!IS_DEBUG)
+		void SetAttributeByIndex(size_t i, T&& val) noxnd
 		{
 			const auto& element = layout.ResolveByIndex(i);
 			auto pAttribute = pData + element.GetOffset();
@@ -182,13 +182,7 @@ namespace MyVertex
 			}
 		}
 	protected:
-		Vertex(char* pData, const VertexLayout& layout) noexcept(!IS_DEBUG)
-			:
-			pData(pData),
-			layout(layout)
-		{
-			assert(pData != nullptr);
-		}
+		Vertex(char* pData, const VertexLayout& layout) noxnd;
 	private:
 		// 이 템플릿함수는 파라매터 팩을 사용하는 함수다 즉
 		// 우리가 선언한 정점버퍼에서는 정점레이아웃이 설명하는 정점을 넣을것인데.
@@ -223,14 +217,14 @@ namespace MyVertex
 		*/
 		template<typename First, typename ...Rest>
 		// enables parameter pack setting of multiple parameters by element index
-		void SetAttributeByIndex(size_t i, First&& first, Rest&&... rest) noexcept(!IS_DEBUG)
+		void SetAttributeByIndex(size_t i, First&& first, Rest&&... rest) noxnd
 		{
 			SetAttributeByIndex(i, std::forward<First>(first));
 			SetAttributeByIndex(i + 1, std::forward<Rest>(rest)...);	//증가시켜줘야 다음 원소를 가르키게된다.
 		}
 		// helper to reduce code duplication in SetAttributeByIndex
 		template<VertexLayout::ElementType DestLayoutType, typename SrcType>
-		void SetAttribute(char* pAttribute, SrcType&& val) noexcept(!IS_DEBUG)
+		void SetAttribute(char* pAttribute, SrcType&& val) noxnd
 		{
 			using Dest = typename VertexLayout::Map<DestLayoutType>::SysType;
 			//is_assignable 은 src에서 Dest로 할당가능여부를 체크한다.
@@ -259,12 +253,9 @@ namespace MyVertex
 	class ConstVertex
 	{
 	public:
-		ConstVertex(const Vertex& v) noexcept(!IS_DEBUG)
-			:
-			vertex(v)
-		{}
+		ConstVertex(const Vertex& v) noxnd;
 		template<VertexLayout::ElementType Type>
-		const auto& Attr() const noexcept(!IS_DEBUG)
+		const auto& Attr() const noxnd
 		{
 			return const_cast<Vertex&>(vertex).Attr<Type>();
 		}
@@ -282,29 +273,11 @@ namespace MyVertex
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer(VertexLayout layout) noexcept(!IS_DEBUG)
-			:
-			layout(std::move(layout))
-		{}
-		const char* GetData() const noexcept(!IS_DEBUG)
-		{
-			return buffer.data();
-		}
-		const VertexLayout& GetLayout() const noexcept
-		{
-			return layout;
-		}
-		//정점의 개수를반환한다.
-		size_t Size() const noexcept(!IS_DEBUG)
-		{
-			return buffer.size() / layout.Size();
-		}
-		//버퍼의 사이즈를 반환한다. 
-		size_t SizeBytes() const noexcept(!IS_DEBUG)
-		{
-			return buffer.size();
-		}
-		//새로운 정점을 생성하여 컨테이너끝에 넣을수 있도록한다.
+		VertexBuffer(VertexLayout layout) noxnd;
+		const char* GetData() const noxnd;
+		const VertexLayout& GetLayout() const noexcept;
+		size_t Size() const noxnd;
+		size_t SizeBytes() const noxnd;
 		template<typename ...Params>
 		void EmplaceBack(Params&&... params) noexcept(!IS_DEBUG)
 		{
@@ -314,37 +287,12 @@ namespace MyVertex
 			buffer.resize(buffer.size() + layout.Size());
 			Back().SetAttributeByIndex(0u, std::forward<Params>(params)...);
 		}
-		//마지막 정점 반환
-		Vertex Back() noexcept(!IS_DEBUG)
-		{
-			assert(buffer.size() != 0u);
-			//buffer의 마지막원소를 Vertex로 제공한다 직접제공 X
-			return Vertex{ buffer.data() + buffer.size() - layout.Size(),layout };
-		}
-		//첫번째 정점반환
-		Vertex Front() noexcept(!IS_DEBUG)
-		{
-			assert(buffer.size() != 0u);
-			return Vertex{ buffer.data(),layout };
-		}
-		//인덱스로 정점에 접근가능하다.
-		Vertex operator[](size_t i) noexcept(!IS_DEBUG)
-		{
-			assert(i < Size());
-			return Vertex{ buffer.data() + layout.Size() * i,layout };
-		}
-		ConstVertex Back() const noexcept(!IS_DEBUG)
-		{
-			return const_cast<VertexBuffer*>(this)->Back();
-		}
-		ConstVertex Front() const noexcept(!IS_DEBUG)
-		{
-			return const_cast<VertexBuffer*>(this)->Front();
-		}
-		ConstVertex operator[](size_t i) const noexcept(!IS_DEBUG)
-		{
-			return const_cast<VertexBuffer&>(*this)[i];
-		}
+		Vertex Back() noxnd;
+		Vertex Front() noxnd;
+		Vertex operator[](size_t i) noxnd;
+		ConstVertex Back() const noxnd;
+		ConstVertex Front() const noxnd;
+		ConstVertex operator[](size_t i) const noxnd;
 	private:
 		std::vector<char> buffer;			//모든 정점들의 바이트 데이터를 담는 컨테이너
 		VertexLayout layout;				//정점의 구조를 설명해주는 레이아웃 클래스

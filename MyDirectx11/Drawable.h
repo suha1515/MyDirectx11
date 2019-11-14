@@ -7,10 +7,6 @@ namespace Bind
 	class Bindable;
 	class IndexBuffer;
 }
-
-
-class Bindable;
-
 class Drawable
 {
 	template<class T>
