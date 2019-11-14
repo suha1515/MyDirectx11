@@ -31,10 +31,8 @@ void App::DoFrame()
 	//점광원을 파이프라인에 바인딩
 	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
-	//모델의 트랜스폼 지정
-	const auto transform = dx::XMMatrixRotationRollPitchYaw(pos.roll, pos.pitch, pos.yaw)
-		* dx::XMMatrixTranslation(pos.x, pos.y, pos.z);
-	nano.Draw(wnd.Gfx(),transform);
+	//모델 그리기
+	nano.Draw(wnd.Gfx());
 
 	//광원의 위치를 그린다.
 	light.Draw(wnd.Gfx());
@@ -42,29 +40,20 @@ void App::DoFrame()
 	//imgui window
 	cam.SpwanControlWindow();
 	light.SpawnControlWindow();
-	ShowModelWindow();
+	ShowImguiDemoWindow();
+	nano.ShowWindow();
+
 
 	//present
 	wnd.Gfx().EndFrame();
 }
-void App::ShowModelWindow()
+void App::ShowImguiDemoWindow()
 {
-	if (ImGui::Begin("Model"))
+	static bool show_demo_window = true;
+	if (show_demo_window)
 	{
-		using namespace std::string_literals;
-
-		ImGui::Text("Orientation");
-		ImGui::SliderAngle("Roll", &pos.roll, -180.f, 180.f);
-		ImGui::SliderAngle("Pitch", &pos.pitch, -180.f, 180.f);
-		ImGui::SliderAngle("Yaw", &pos.yaw, -180.f, 180.f);
-
-		ImGui::Text("Position");
-		ImGui::SliderFloat("X", &pos.x, -20.0f, 20.0f);
-		ImGui::SliderFloat("Y", &pos.y, -20.0f, 20.0f);
-		ImGui::SliderFloat("Z", &pos.z , -20.0f, 20.0f);
-		ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::ShowDemoWindow(&show_demo_window);
 	}
-	ImGui::End();
 }
 int App::Go()
 {

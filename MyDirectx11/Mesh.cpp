@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "imgui/imgui.h"
 
 // Mesh
 //생성자에서 바인드 가능한 객체들의 포인터를 넘기는데 이때 인덱스버퍼는 따로 구분하여
@@ -30,7 +31,7 @@ Mesh::Mesh(Graphics& gfx, std::vector<std::unique_ptr<Bind::Bindable>> bindPtrs)
 }
 // 그리기를 담당하는 함수이다.
 	// 인자 행렬은 노드시스템에서 자식일경우 부모로부터의 행렬이 축적되어 사용되기에 accumlatedTransform 이다.
-void Mesh::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noexcept(!IS_DEBUG)
+void Mesh::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd
 {
 	DirectX::XMStoreFloat4x4(&transform, accumulatedTransform);
 	Drawable::Draw(gfx);
@@ -47,9 +48,10 @@ DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
 	노드는 메쉬들의 포인터들을 가지고있어 Draw 함수로 자신의 트랜스폼으로 자신의 노드 메쉬들에 전달하여 그린다.
 	노드는 1개이상의 자식을 가지고있으며 해당 자식들도 노드의 트랜스폼을받고 그린다.
 */
-Node::Node(std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd
+Node::Node(const std:: string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd
 	:
-meshPtrs(std::move(meshPtrs))
+meshPtrs(std::move(meshPtrs)),
+name(name)
 {
 	DirectX::XMStoreFloat4x4(&this->transform, transform);
 }
@@ -64,6 +66,18 @@ void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 	for (const auto& pc : childPtrs)
 	{
 		pc->Draw(gfx, built);
+	}
+}
+void Node::RenderTree() const noexcept
+{
+	// 트리가 확장되면 , 모든 자식들을 재귀로 그린다.
+	if (ImGui::TreeNode(name.c_str()))
+	{
+		for (const auto& pChild : childPtrs)
+		{
+			pChild->RenderTree();
+		}
+		ImGui::TreePop();
 	}
 }
 //자식노드를 추가하는 코드
@@ -96,10 +110,35 @@ Model::Model(Graphics& gfx, const std::string fileName)
 	//루트노드를 ParseNode에 전달한다.
 	pRoot = ParseNode(*pScene->mRootNode);
 }
+
 //그리기 작업을 수행한다.
-void Model::Draw(Graphics& gfx, DirectX::FXMMATRIX transform) const
+void Model::Draw(Graphics& gfx) const noxnd
 {
+	//각 모델바다 트랜스폼을 구성한다.
+	const auto transform = DirectX::XMMatrixRotationRollPitchYaw(pos.roll, pos.pitch, pos.yaw) *
+		DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
 	pRoot->Draw(gfx, transform);
+}
+// 모델별 ImGui 구성
+void Model::ShowWindow(const char* windowName) noexcept
+{
+	windowName = windowName ? windowName : "Model";
+	if (ImGui::Begin(windowName))
+	{
+		ImGui::Columns(2, nullptr, true);
+		pRoot->RenderTree();
+
+		ImGui::NextColumn();
+		ImGui::Text("Orientation");
+		ImGui::SliderAngle("Roll", &pos.roll, -180.0f, 180.0f);
+		ImGui::SliderAngle("Pitch", &pos.pitch, -180.0f, 180.0f);
+		ImGui::SliderAngle("Yaw", &pos.yaw, -180.0f, 180.0f);
+		ImGui::Text("Position");
+		ImGui::SliderFloat("X", &pos.x, -20.0f, 20.0f);
+		ImGui::SliderFloat("Y", &pos.y, -20.0f, 20.0f);
+		ImGui::SliderFloat("Z", &pos.z, -20.0f, 20.0f);
+	}
+	ImGui::End();
 }
 // 오브젝트의 메쉬에 접근하여 정보를 가공한다.
 std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
@@ -171,7 +210,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 	// mesh 객체를 유니크포인터로 할당하여 바인딩컨테이너에서 파이프라인에 바인딩을 진행한다.
 	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
 }
-std::unique_ptr<Node> Model::ParseNode(const aiNode& node)
+std::unique_ptr<Node> Model::ParseNode(const aiNode& node) noexcept
 {
 	namespace dx = DirectX;
 	// assimp 에서 각 노드는 트랜스폼을 가지고 있으므로 해당 행렬을 받아온다
@@ -190,7 +229,7 @@ std::unique_ptr<Node> Model::ParseNode(const aiNode& node)
 		curMeshPtrs.push_back(meshPtrs.at(meshIdx).get());
 	}
 	//구성된 메쉬 컨테이너와함께 트랜스폼으로 노드객체를 할당한다.
-	auto pNode = std::make_unique<Node>(std::move(curMeshPtrs), transform);
+	auto pNode = std::make_unique<Node>(node.mName.C_Str(),std::move(curMeshPtrs), transform);
 	//만약 노드에 자식이 있을경우 자식 개수만큼 추가한다.
 	for (size_t i = 0; i < node.mNumChildren; i++)
 	{

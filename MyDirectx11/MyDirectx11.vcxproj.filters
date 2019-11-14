@@ -67,6 +67,12 @@
     <Filter Include="01.Light\PointLight">
       <UniqueIdentifier>{7c763a2d-97af-4af1-b1bb-6749d93aa903}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\Mesh">
+      <UniqueIdentifier>{ef7a6934-5caf-4c2c-922d-e3a6595c5524}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\Mesh">
+      <UniqueIdentifier>{1a15dcf6-368d-40d8-aab7-453bc21a1fb7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WinMainApp.cpp">
@@ -193,7 +199,7 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Mesh.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Mesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -375,7 +381,7 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Mesh</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
