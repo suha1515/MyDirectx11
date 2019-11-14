@@ -64,8 +64,9 @@ void App::ShowModelWindow()
 
 		ImGui::Text("Position");
 		ImGui::SliderFloat("X", &pos.x, -20.0f, 20.0f);
-		ImGui::SliderFloat("Y", &pos.x, -20.0f, 20.0f);
-		ImGui::SliderFloat("Z", &pos.x, -20.0f, 20.0f);
+		ImGui::SliderFloat("Y", &pos.y, -20.0f, 20.0f);
+		ImGui::SliderFloat("Z", &pos.z , -20.0f, 20.0f);
+		ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 	}
 	ImGui::End();
 }
