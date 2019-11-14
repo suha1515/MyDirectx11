@@ -1,6 +1,8 @@
 #include "Mesh.h"
 #include "imgui/imgui.h"
 
+namespace dx = DirectX;
+
 // Mesh
 //생성자에서 바인드 가능한 객체들의 포인터를 넘기는데 이때 인덱스버퍼는 따로 구분하여
 //AddIndexBuffer로 인덱스버퍼 바인딩을 수행한다.하지만 유니크 포인터를 사용하고 있으므로 
@@ -68,14 +70,14 @@ void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 		pc->Draw(gfx, built);
 	}
 }
-void Node::RenderTree() const noexcept
+void Node::ShowTree() const noexcept
 {
-	// 트리가 확장되면 , 모든 자식들을 재귀로 그린다.
+	// if tree node expanded, recursively render all children
 	if (ImGui::TreeNode(name.c_str()))
 	{
 		for (const auto& pChild : childPtrs)
 		{
-			pChild->RenderTree();
+			pChild->ShowTree();
 		}
 		ImGui::TreePop();
 	}
@@ -87,12 +89,56 @@ void Node::AddChild(std::unique_ptr<Node> pChild) noxnd
 	childPtrs.push_back(std::move(pChild));
 }
 
+// Model
+class ModelWindow // pImpl idiom, only defined in this .cpp 
+				  //pimple 이란 컴파일 의존성을 줄이기 위한 하나의 설계 기법이다.
+{
+public:
+	void Show(const char* windowName, const Node& root) noexcept
+	{
+		// window name defaults to "Model"
+		windowName = windowName ? windowName : "Model";
+		if (ImGui::Begin(windowName))
+		{
+			ImGui::Columns(2, nullptr, true);
+			root.ShowTree();
+
+			ImGui::NextColumn();
+			ImGui::Text("Orientation");
+			ImGui::SliderAngle("Roll", &pos.roll, -180.0f, 180.0f);
+			ImGui::SliderAngle("Pitch", &pos.pitch, -180.0f, 180.0f);
+			ImGui::SliderAngle("Yaw", &pos.yaw, -180.0f, 180.0f);
+			ImGui::Text("Position");
+			ImGui::SliderFloat("X", &pos.x, -20.0f, 20.0f);
+			ImGui::SliderFloat("Y", &pos.y, -20.0f, 20.0f);
+			ImGui::SliderFloat("Z", &pos.z, -20.0f, 20.0f);
+		}
+		ImGui::End();
+	}
+	dx::XMMATRIX GetTransform() const noexcept
+	{
+		return dx::XMMatrixRotationRollPitchYaw(pos.roll, pos.pitch, pos.yaw) *
+			dx::XMMatrixTranslation(pos.x, pos.y, pos.z);
+	}
+private:
+	struct
+	{
+		float roll = 0.0f;
+		float pitch = 0.0f;
+		float yaw = 0.0f;
+		float x = 0.0f;
+		float y = 0.0f;
+		float z = 0.0f;
+	} pos;
+};
+
 // Model 클래스
 /*
 	3d 오브젝트를 불러오고 메쉬,노드로 나누어서 보관한다
 */
 //3d 모델을 assimp로 불러온다.
 Model::Model(Graphics& gfx, const std::string fileName)
+	:pWindow(std::make_unique<ModelWindow>())
 {
 	Assimp::Importer imp;
 	const auto pScene = imp.ReadFile(fileName.c_str(),
@@ -114,31 +160,15 @@ Model::Model(Graphics& gfx, const std::string fileName)
 //그리기 작업을 수행한다.
 void Model::Draw(Graphics& gfx) const noxnd
 {
-	//각 모델바다 트랜스폼을 구성한다.
-	const auto transform = DirectX::XMMatrixRotationRollPitchYaw(pos.roll, pos.pitch, pos.yaw) *
-		DirectX::XMMatrixTranslation(pos.x, pos.y, pos.z);
-	pRoot->Draw(gfx, transform);
+	pRoot->Draw(gfx, pWindow->GetTransform());
 }
 // 모델별 ImGui 구성
 void Model::ShowWindow(const char* windowName) noexcept
 {
-	windowName = windowName ? windowName : "Model";
-	if (ImGui::Begin(windowName))
-	{
-		ImGui::Columns(2, nullptr, true);
-		pRoot->RenderTree();
-
-		ImGui::NextColumn();
-		ImGui::Text("Orientation");
-		ImGui::SliderAngle("Roll", &pos.roll, -180.0f, 180.0f);
-		ImGui::SliderAngle("Pitch", &pos.pitch, -180.0f, 180.0f);
-		ImGui::SliderAngle("Yaw", &pos.yaw, -180.0f, 180.0f);
-		ImGui::Text("Position");
-		ImGui::SliderFloat("X", &pos.x, -20.0f, 20.0f);
-		ImGui::SliderFloat("Y", &pos.y, -20.0f, 20.0f);
-		ImGui::SliderFloat("Z", &pos.z, -20.0f, 20.0f);
-	}
-	ImGui::End();
+	pWindow->Show(windowName, *pRoot);
+}
+Model::~Model() noexcept
+{
 }
 // 오브젝트의 메쉬에 접근하여 정보를 가공한다.
 std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
@@ -239,3 +269,4 @@ std::unique_ptr<Node> Model::ParseNode(const aiNode& node) noexcept
 
 	return pNode;
 }
+
