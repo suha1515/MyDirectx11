@@ -16,7 +16,6 @@ App::App()
 	:wnd(1280,720,"My Window"),light(wnd.Gfx())
 {
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
-	wnd.DisableCursor();
 }
 
 void App::DoFrame()
@@ -34,6 +33,23 @@ void App::DoFrame()
 
 	//광원의 위치를 그린다.
 	light.Draw(wnd.Gfx());
+
+	while (const auto e = wnd.kbd.ReadKey())
+	{
+		if (e->IsPress() && e->GetCode() == VK_INSERT)
+		{
+			if (cursorEnabled)
+			{
+				wnd.DisableCursor();
+				cursorEnabled = false;
+			}
+			else
+			{
+				wnd.EnableCursor();
+				cursorEnabled = true;
+			}
+		}
+	}
 
 	//imgui window
 	cam.SpwanControlWindow();
@@ -66,6 +82,7 @@ void App::ShowRawInputWindow()
 	if (ImGui::Begin("Raw Input"))
 	{
 		ImGui::Text("Tally: (%d,%d)", x, y);
+		ImGui::Text("Cursor: %s", cursorEnabled ? "enabled" : "disabled");
 	}
 }
 int App::Go()

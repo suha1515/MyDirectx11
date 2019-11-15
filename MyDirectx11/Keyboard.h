@@ -47,7 +47,7 @@ public:
 	~Keyboard();
 	//key event stuff
 	bool KeyIsPressed(unsigned char keycode) const noexcept;
-	Keyboard::Event ReadKey() noexcept;
+	std::optional<Event> ReadKey() noexcept;
 	bool KeyIsEmpty() const noexcept;
 	void FlushKey() noexcept;
 	//char event stuff
