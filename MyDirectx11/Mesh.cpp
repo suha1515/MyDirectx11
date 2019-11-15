@@ -76,8 +76,9 @@ DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
 	노드는 메쉬들의 포인터들을 가지고있어 Draw 함수로 자신의 트랜스폼으로 자신의 노드 메쉬들에 전달하여 그린다.
 	노드는 1개이상의 자식을 가지고있으며 해당 자식들도 노드의 트랜스폼을받고 그린다.
 */
-Node::Node(const std:: string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform_in) noxnd
+Node::Node(int id,const std:: string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform_in) noxnd
 	:
+id(id),
 meshPtrs(std::move(meshPtrs)),
 name(name)
 {
@@ -101,30 +102,27 @@ void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 	}
 }
 
-void Node::ShowTree(int& nodeIndexTracked, std::optional<int>& selectedIndex, Node*& pSelectedNode) const noexcept
+void Node::ShowTree(std::optional<int>& selectedIndex, Node*& pSelectedNode) const noexcept
 {
-	// nodexIndex 는 gui 트리 노드를 위한 uid 로작동한다. 재귀하면서 증가하게 된다.
-	const int currentNodeIndex = nodeIndexTracked;
-	nodeIndexTracked++;
 	// 최근 노드를 위해 플래그를 세운다.
 	const auto node_flags = ImGuiTreeNodeFlags_OpenOnArrow |
-		((currentNodeIndex == selectedIndex.value_or(-1)) ? ImGuiTreeNodeFlags_Selected : 0) |
+		((GetId() == selectedIndex.value_or(-1)) ? ImGuiTreeNodeFlags_Selected : 0) |
 		((childPtrs.size() == 0) ? ImGuiTreeNodeFlags_Leaf : 0);
 	//만약 노드가 확장되면 재귀로 자식들을 그린다.
 	const auto expanded = ImGui::TreeNodeEx(
-		(void*)(intptr_t)currentNodeIndex, node_flags, name.c_str()
+		(void*)(intptr_t)GetId(), node_flags, name.c_str()
 	);
 
 	if (ImGui::IsItemClicked())
 	{
-		selectedIndex = currentNodeIndex;
+		selectedIndex = GetId();
 		pSelectedNode = const_cast<Node*>(this);
 	}
 	if (expanded)
 	{
 		for (const auto& pChild : childPtrs)
 		{
-			pChild->ShowTree(nodeIndexTracked, selectedIndex, pSelectedNode);
+			pChild->ShowTree(selectedIndex, pSelectedNode);
 		}
 		ImGui::TreePop();
 	}
@@ -138,6 +136,10 @@ void Node::AddChild(std::unique_ptr<Node> pChild) noxnd
 {
 	assert(pChild);
 	childPtrs.push_back(std::move(pChild));
+}
+int Node::GetId() const noexcept
+{
+	return id;
 }
 
 // Model
@@ -154,7 +156,7 @@ public:
 		if (ImGui::Begin(windowName))
 		{
 			ImGui::Columns(2, nullptr, true);
-			root.ShowTree(nodeIndexTracker,selectedIndex,pSelectedNode);
+			root.ShowTree(selectedIndex,pSelectedNode);
 			if (pSelectedNode != nullptr)//선택된 노드가 있을경우만 gui 표시
 			{
 				auto& transform = transforms[*selectedIndex];
@@ -219,7 +221,8 @@ Model::Model(Graphics& gfx, const std::string fileName)
 		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i]));
 	}
 	//루트노드를 ParseNode에 전달한다.
-	pRoot = ParseNode(*pScene->mRootNode);
+	int nextId = 0;
+	pRoot = ParseNode(nextId ,*pScene->mRootNode);
 }
 
 //그리기 작업을 수행한다.
@@ -309,7 +312,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 	// mesh 객체를 유니크포인터로 할당하여 바인딩컨테이너에서 파이프라인에 바인딩을 진행한다.
 	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
 }
-std::unique_ptr<Node> Model::ParseNode(const aiNode& node) noexcept
+std::unique_ptr<Node> Model::ParseNode(int& nextId,const aiNode& node) noexcept
 {
 	namespace dx = DirectX;
 	// assimp 에서 각 노드는 트랜스폼을 가지고 있으므로 해당 행렬을 받아온다

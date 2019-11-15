@@ -48,16 +48,18 @@ class Node
 	friend class Model;
 	friend class ModelWindow;			//모델윈도우의 기능에 접근한다.
 public:
-	Node(const std::string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd;
+	Node(int id,const std::string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd;
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd;
 	void SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept;	//트랜스폼을 적용한다.
+	int GetId()const noexcept;
 private:
 	void AddChild(std::unique_ptr<Node> pChild) noxnd;
 	// 인덱스를 통해 직접 노드에 접근할수 있다.
-	void ShowTree(int& nodeIndexTracked, std::optional<int>& selectedIndex,Node*& pSelectedNode) const noexcept;
+	void ShowTree(std::optional<int>& selectedIndex,Node*& pSelectedNode) const noexcept;
 	//nodexIdex는 노드별 고유한 인덱스를 제공한다
 private:
 	std::string name;								//노드별 이름추가.
+	int	id;											//노드별 id
 	std::vector<std::unique_ptr<Node>> childPtrs;	//자식 노드
 	std::vector<Mesh*> meshPtrs;					//노드 메쉬들
 	DirectX::XMFLOAT4X4 transform;					//파일에서 나온 트랜스폼
@@ -77,7 +79,7 @@ public:
 	~Model() noexcept;	//소멸자 구성을 하지않으면 전방선언타입으로 유니크 포인터를 만들수 없다는데 왜그럴까..
 private:
 	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiMesh& mesh);
-	std::unique_ptr<Node> ParseNode(const aiNode& node) noexcept;
+	std::unique_ptr<Node> ParseNode(int& nexId,const aiNode& node) noexcept;
 private:
 	std::unique_ptr<Node> pRoot;
 	std::vector<std::unique_ptr<Mesh>> meshPtrs;
