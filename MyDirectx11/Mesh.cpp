@@ -111,17 +111,20 @@ void Node::ShowTree(int& nodeIndexTracked, std::optional<int>& selectedIndex, No
 		((currentNodeIndex == selectedIndex.value_or(-1)) ? ImGuiTreeNodeFlags_Selected : 0) |
 		((childPtrs.size() == 0) ? ImGuiTreeNodeFlags_Leaf : 0);
 	//만약 노드가 확장되면 재귀로 자식들을 그린다.
-	if (ImGui::TreeNodeEx((void*)(intptr_t)currentNodeIndex, node_flags, name.c_str()))
+	const auto expanded = ImGui::TreeNodeEx(
+		(void*)(intptr_t)currentNodeIndex, node_flags, name.c_str()
+	);
+
+	if (ImGui::IsItemClicked())
 	{
-		if (ImGui::IsItemClicked())
-		{
-			selectedIndex = currentNodeIndex;
-			pSelectedNode = const_cast<Node*>(this);	//ShowTree 함수가 const 함수라 외부의 변수를 바꾸지 못하도록 되어있다
-														//그래서 상수성을 제거하는 캐스팅을 수행한다.
-		}
+		selectedIndex = currentNodeIndex;
+		pSelectedNode = const_cast<Node*>(this);
+	}
+	if (expanded)
+	{
 		for (const auto& pChild : childPtrs)
 		{
-			pChild->ShowTree(nodeIndexTracked, selectedIndex,pSelectedNode);
+			pChild->ShowTree(nodeIndexTracked, selectedIndex, pSelectedNode);
 		}
 		ImGui::TreePop();
 	}
