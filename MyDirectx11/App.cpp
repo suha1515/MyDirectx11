@@ -40,6 +40,7 @@ void App::DoFrame()
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 	nano.ShowWindow();
+	ShowRawInputWindow();
 
 
 	//present
@@ -51,6 +52,20 @@ void App::ShowImguiDemoWindow()
 	if (show_demo_window)
 	{
 		ImGui::ShowDemoWindow(&show_demo_window);
+	}
+}
+void App::ShowRawInputWindow()
+{
+	//마우스 좌표를읽어서 imgui로 표현한다.
+	// ReadRawDelta가 optional을 반환하므로 실패시 false가 반환될것이다
+	while (const auto d = wnd.mouse.ReadRawDelta())
+	{
+		x += d->x;
+		y += d->y;
+	}
+	if (ImGui::Begin("Raw Input"))
+	{
+		ImGui::Text("Tally: (%d,%d)", x, y);
 	}
 }
 int App::Go()

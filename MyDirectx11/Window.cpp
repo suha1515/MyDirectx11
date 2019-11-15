@@ -77,6 +77,16 @@ Window::Window(int width, int height, const char* name)
 	ImGui_ImplWin32_Init(hWnd);
 	//그래픽 객체 생성
 	pGfx = std::make_unique<Graphics>(hWnd, width,height);
+
+	//mouse raw input 장치를 등록한다
+	RAWINPUTDEVICE rid;
+	rid.usUsagePage = 0x01;	//마우스페이지
+	rid.usUsage = 0x02;	//마우스용도
+	//위의 두 바이트를 조합한것이 윈도의 어떤장치를 고르는지 결정된다.
+	rid.dwFlags = 0;
+	rid.hwndTarget = nullptr;
+	if (RegisterRawInputDevices(&rid, 1, sizeof(rid)) == FALSE)
+		throw BSWND_LAST_EXCEPT();
 }
 
 Window::~Window()
@@ -216,7 +226,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
-		/******************************KEYBOARD MESSAGE***********************************/
+		/******************************KEYBOARD MESSAGE BEGIN***********************************/
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN: //모든 시스템 메시지가 들어온다.
 		//imgui의 추가로 imgui에서 캡처하기 원하는 키가 있을경우 키보드 메시지를 가로챈다.
@@ -260,9 +270,9 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			}
 		}
 		break;
-		/******************************KEYBOARD MESSAGE***********************************/
+		/******************************KEYBOARD MESSAGE END***********************************/
 
-		/*********************************MOUSE MESSAGE***********************************/
+		/*********************************MOUSE MESSAGE BEGIN***********************************/
 	case WM_MOUSEMOVE:
 	{	
 		if (imio.WantCaptureKeyboard)
@@ -277,7 +287,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			{
 				SetCapture(hWnd);		//SetCaputure 함수는 마우스가 윈도우 밖으로 나가더라도. 계속해서 마우스의 값을 받는다.
 										//혹은 마우스버튼을 누른채로 윈도우 밖을 나가더라도 캡처를 계속한다.
-				mouse.OnMouseEnfer();
+				mouse.OnMouseEnter();
 				HideCursor();
 			}
 		}
@@ -341,7 +351,52 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		mouse.OnWheelDelta(pt.x, pt.y, delta);
 		break;
 	}
-	/*********************************MOUSE MESSAGE***********************************/
+	/*********************************MOUSE MESSAGE END***********************************/
+
+	/*********************************RAW MOUSE INPUT BEGIN*********************************/
+	//WM_INPUT 메시지 발생시 raw iuput 정보에 대한 핸들을 전달한다.
+	// Raw Input 데이터를 위한 장치를 등록하지 않는이상 WM_INPUT 메시지는 발생하지 않는다.
+
+	case WM_INPUT: 
+	{
+		UINT size;
+		//입력 데이타의 크기를 처음 받아온다
+		// GetRawInputData로 정보를 받아온다.
+		// c처음 3번째 인자를 nullptr로 두어 실제 데이터를 받진않고 size를 4번째 매개변수로 넘겨
+		// 데이터의 크기를 얻어왔다
+		if (GetRawInputData(
+			reinterpret_cast<HRAWINPUT>(lParam),
+			RID_INPUT,
+			nullptr,
+			&size,
+			sizeof(RAWINPUTHEADER)) == -1)		//오류가있다면 -1을 반환
+			break;
+
+		//두번째에서는 벡터 컨테이너를 해당크기만큼 예약한뒤 실제로 다시 주소를 넘김으로서 정확한 데이터를 받는다.
+		rawBuffer.reserve(size);
+		//입력된 데이터를 읽는다.
+		if (GetRawInputData(
+			reinterpret_cast<HRAWINPUT>(lParam),
+			RID_INPUT,
+			rawBuffer.data(),
+			&size,
+			sizeof(RAWINPUTHEADER)) != size)	//읽은 자료가 위에서 읽은 자료의 크기가 아니라면  오류
+			break;
+
+		//읽어온 raw Data를  RAWINPUT 구조체로 캐스팅한다.
+		auto& ri = reinterpret_cast<const RAWINPUT&>(*rawBuffer.data());
+		//헤더는 타입정보를 가지고 있다 즉 많은 RAWINPUTDATA 중 어떤 데이터인지 알려주므로
+		//우리는 마우스 타입의 데이터를 원하므로 RIM_TYPEMOUSE로 비교한다.
+
+		//마우스탕비이라면 mouse로 데이터에 접근한다.
+		if(ri.header.dwType == RIM_TYPEMOUSE&&
+			ri.data.mouse.lLastX!=0||ri.data.mouse.lLastY!=0)
+		{ 
+			mouse.OnRawDelta(ri.data.mouse.lLastX, ri.data.mouse.lLastY);
+		}
+		break;
+	}
+	/*********************************RAW MOUSE INPUT END*********************************/
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
