@@ -91,18 +91,20 @@ void Window::SetTitle(const std::string title)
 		throw BSWND_LAST_EXCEPT();
 }
 
-void Window::EnableCursor()
+void Window::EnableCursor() noexcept
 {
 	cursorEnabled = true;
-	ShowCursor();
+	//ShowCursor();
 	EnableImGuiMouse();
+	FreeCursor();
 }
 
-void Window::DisableCursor()
+void Window::DisableCursor() noexcept
 {
 	cursorEnabled = false;
-	HideCursor();
+	//HideCursor();
 	DisableImGuiMouse();
+	ConfineCursor();
 }
 
 std::optional<int> Window::ProcessMessages() noexcept
@@ -129,22 +131,38 @@ Graphics& Window::Gfx()
 	return *pGfx;
 }
 
-void Window::HideCursor()
+void Window::ConfineCursor() noexcept
+{
+	RECT rect;
+	GetClientRect(hWnd, &rect);
+	//윈도우 공간에서 스크린 공간으로 포인트를 변환한다.
+	MapWindowPoints(hWnd, nullptr, reinterpret_cast<POINT*>(&rect), 2);
+	//api 함수로 윈도영역에서의 마우스위치를 제한한다.
+	//위에서 클라이언트 영역만큼 제한된다.
+	ClipCursor(&rect);
+}
+
+void Window::FreeCursor() noexcept
+{
+	ClipCursor(nullptr);
+}
+ 
+void Window::HideCursor() noexcept
 {
 	while (::ShowCursor(FALSE) >= 0);
 }
 
-void Window::ShowCursor()
+void Window::ShowCursor() noexcept
 {
 	while (::ShowCursor(TRUE) < 0);
 }
 
-void Window::EnableImGuiMouse()
+void Window::EnableImGuiMouse() noexcept
 {
 	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
 }
 
-void Window::DisableImGuiMouse()
+void Window::DisableImGuiMouse() noexcept
 {
 	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
 }

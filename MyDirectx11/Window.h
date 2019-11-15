@@ -58,17 +58,19 @@ public:
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 	void SetTitle(const std::string title);
-	void EnableCursor();			//마우스 커서 활성화
-	void DisableCursor();			//마우스 커서 비활성화
+	void EnableCursor() noexcept;			//마우스 커서 활성화
+	void DisableCursor()noexcept;			//마우스 커서 비활성화
 	static std::optional<int> ProcessMessages() noexcept;
 
 	Graphics& Gfx();
 
 private:
-	void HideCursor();				//마우스 숨기기
-	void ShowCursor();				//마우스 보이기
-	void EnableImGuiMouse();		//imgui 마우스 활성화
-	void DisableImGuiMouse();		//imgui 마우스 활성화
+	void ConfineCursor() noexcept;		//마우스 제한
+	void FreeCursor() noexcept;			//마우스 제한해제
+	void HideCursor() noexcept;			//마우스 숨기기
+	void ShowCursor() noexcept;			//마우스 보이기
+	void EnableImGuiMouse() noexcept;	//imgui 마우스 활성화
+	void DisableImGuiMouse() noexcept;	//imgui 마우스 활성화
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
