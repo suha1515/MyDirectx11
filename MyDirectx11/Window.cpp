@@ -76,7 +76,7 @@ Window::Window(int width, int height, const char* name)
 	//Initialize ImGui Win32 Implement
 	ImGui_ImplWin32_Init(hWnd);
 	//그래픽 객체 생성
-	pGfx = std::make_unique<Graphics>(hWnd);
+	pGfx = std::make_unique<Graphics>(hWnd, width,height);
 }
 
 Window::~Window()

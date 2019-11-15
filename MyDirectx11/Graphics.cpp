@@ -17,12 +17,12 @@ namespace dx = DirectX;
 #pragma comment(lib,"D3DCompiler.lib")
 
 
-Graphics::Graphics(HWND hWnd)
+Graphics::Graphics(HWND hWnd, int width, int height)
 {
 	DXGI_SWAP_CHAIN_DESC sd = {};
 	//---버퍼 가로,세로 포맷,주기등 버퍼정보 구조체
-	sd.BufferDesc.Width = 0;
-	sd.BufferDesc.Height = 0;
+	sd.BufferDesc.Width = width;
+	sd.BufferDesc.Height = height;
 	sd.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	sd.BufferDesc.RefreshRate.Numerator = 0;
 	sd.BufferDesc.RefreshRate.Denominator = 0;
@@ -105,8 +105,8 @@ Graphics::Graphics(HWND hWnd)
 	// 이제 깊이-스텐실 텍스쳐를 만들어야 한다.
 	wrl::ComPtr<ID3D11Texture2D> pDepthStencil;
 	D3D11_TEXTURE2D_DESC descDepth = {};
-	descDepth.Width = 800u;		//가로 세로는 SwapChain 과 같아야한다.
-	descDepth.Height = 600u;
+	descDepth.Width = width;		//가로 세로는 SwapChain 과 같아야한다.
+	descDepth.Height = height;
 	descDepth.MipLevels = 1u;	//밉맵에 대해서는 나중에 다룬다.
 	descDepth.ArraySize = 1u;	//나중에 단일 텍스쳐 자원에 대해서 배열단위로 텍스쳐를 넣을수 있다. 나중에 다룬다
 	descDepth.Format = DXGI_FORMAT_D32_FLOAT;	//텍스쳐의 포맷으로 보통 R32G32B32 이런 포맷이지만 D32 로 알수있다. 이것은 깊이를위해 있는것이다
@@ -134,8 +134,8 @@ Graphics::Graphics(HWND hWnd)
 
 	// 그후 렌더타겟을 정했으면 이제 뷰포트를 정해야한다.
 	D3D11_VIEWPORT vp;
-	vp.Width = 800;
-	vp.Height = 600;
+	vp.Width = (float)width;
+	vp.Height = (float)height;
 	vp.MinDepth = 0;
 	vp.MaxDepth = 1;
 	vp.TopLeftX = 0;
