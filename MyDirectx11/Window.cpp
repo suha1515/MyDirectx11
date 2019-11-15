@@ -117,6 +117,11 @@ void Window::DisableCursor() noexcept
 	ConfineCursor();
 }
 
+bool Window::CursorEnabled() const noexcept
+{
+	return cursorEnabled;
+}
+
 std::optional<int> Window::ProcessMessages() noexcept
 {
 	MSG msg;

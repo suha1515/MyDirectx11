@@ -60,6 +60,7 @@ public:
 	void SetTitle(const std::string title);
 	void EnableCursor() noexcept;			//마우스 커서 활성화
 	void DisableCursor()noexcept;			//마우스 커서 비활성화
+	bool CursorEnabled() const noexcept;	
 	static std::optional<int> ProcessMessages() noexcept;
 
 	Graphics& Gfx();
