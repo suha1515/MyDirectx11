@@ -76,14 +76,14 @@ private:
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 public:
-	bool cursorEnabled = true;
 	Keyboard kbd;						//키보드 객체
 	Mouse	 mouse;						//마우스 객체
-	std::unique_ptr<Graphics> pGfx;		//그래픽 디바이스
 private:
+	bool cursorEnabled = true;
 	int width;
 	int height;
 	HWND hWnd;
+	std::unique_ptr<Graphics> pGfx;		//그래픽 디바이스
 	std::vector<BYTE> rawBuffer;
 
 };

@@ -104,7 +104,7 @@ void Window::SetTitle(const std::string title)
 void Window::EnableCursor() noexcept
 {
 	cursorEnabled = true;
-	//ShowCursor();
+	ShowCursor();
 	EnableImGuiMouse();
 	FreeCursor();
 }
@@ -112,7 +112,7 @@ void Window::EnableCursor() noexcept
 void Window::DisableCursor() noexcept
 {
 	cursorEnabled = false;
-	//HideCursor();
+	HideCursor();
 	DisableImGuiMouse();
 	ConfineCursor();
 }
@@ -231,28 +231,6 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
-		/******************************KEYBOARD MESSAGE BEGIN***********************************/
-	case WM_KEYDOWN:
-	case WM_SYSKEYDOWN: //모든 시스템 메시지가 들어온다.
-		//imgui의 추가로 imgui에서 캡처하기 원하는 키가 있을경우 키보드 메시지를 가로챈다.
-		if (imio.WantCaptureKeyboard)
-			break;
-		if (!(lParam & 0x40000000) || kbd.AutorepeatIsEnabled())
-		{
-			kbd.OnKeyPressed(static_cast<unsigned char>(wParam));
-		}
-		break;
-	case WM_KEYUP:
-	case WM_SYSKEYUP:
-		if (imio.WantCaptureKeyboard)
-			break;
-		kbd.OnKeyReleased(static_cast<unsigned char>(wParam));
-		break;
-	case WM_CHAR:
-		if (imio.WantCaptureKeyboard)
-			break;
-		kbd.OnChar(static_cast<unsigned char>(wParam));
-		break;
 	case WM_KILLFOCUS:
 		kbd.ClearState();
 		break;
@@ -275,6 +253,28 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			}
 		}
 		break;
+		/******************************KEYBOARD MESSAGE BEGIN***********************************/
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN: //모든 시스템 메시지가 들어온다.
+		//imgui의 추가로 imgui에서 캡처하기 원하는 키가 있을경우 키보드 메시지를 가로챈다.
+		if (imio.WantCaptureKeyboard)
+			break;
+		if (!(lParam & 0x40000000) || kbd.AutorepeatIsEnabled())
+		{
+			kbd.OnKeyPressed(static_cast<unsigned char>(wParam));
+		}
+		break;
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+		if (imio.WantCaptureKeyboard)
+			break;
+		kbd.OnKeyReleased(static_cast<unsigned char>(wParam));
+		break;
+	case WM_CHAR:
+		if (imio.WantCaptureKeyboard)
+			break;
+		kbd.OnChar(static_cast<unsigned char>(wParam));
+		break;
 		/******************************KEYBOARD MESSAGE END***********************************/
 
 		/*********************************MOUSE MESSAGE BEGIN***********************************/
@@ -284,6 +284,22 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 			break;
 		const POINTS pt = MAKEPOINTS(lParam);
 
+		// cursorless exclusive gets first dibs
+		if (!cursorEnabled)
+		{
+			if (!mouse.IsInWindow())
+			{
+				SetCapture(hWnd);
+				mouse.OnMouseEnter();
+				HideCursor();
+			}
+			break;
+		}
+		// stifle this mouse message if imgui wants to capture
+		if (imio.WantCaptureMouse)
+		{
+			break;
+		}
 		//클라이언트 영역에 있을경우. 
 		if (pt.x >= 0 && pt.x < width && pt.y >= 0 && pt.y < height)
 		{
@@ -364,6 +380,10 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 
 	case WM_INPUT: 
 	{
+		if (!mouse.RawEnabled())
+		{
+			break;
+		}
 		UINT size;
 		//입력 데이타의 크기를 처음 받아온다
 		// GetRawInputData로 정보를 받아온다.
@@ -393,7 +413,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 		//헤더는 타입정보를 가지고 있다 즉 많은 RAWINPUTDATA 중 어떤 데이터인지 알려주므로
 		//우리는 마우스 타입의 데이터를 원하므로 RIM_TYPEMOUSE로 비교한다.
 
-		//마우스탕비이라면 mouse로 데이터에 접근한다.
+		//마우스타입이라면 mouse로 데이터에 접근한다.
 		if(ri.header.dwType == RIM_TYPEMOUSE&&
 			ri.data.mouse.lLastX!=0||ri.data.mouse.lLastY!=0)
 		{ 

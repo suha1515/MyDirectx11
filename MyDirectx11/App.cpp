@@ -50,7 +50,6 @@ void App::DoFrame()
 			}
 		}
 	}
-
 	//imgui window
 	cam.SpwanControlWindow();
 	light.SpawnControlWindow();
@@ -84,6 +83,7 @@ void App::ShowRawInputWindow()
 		ImGui::Text("Tally: (%d,%d)", x, y);
 		ImGui::Text("Cursor: %s", wnd.CursorEnabled() ? "enabled" : "disabled");
 	}
+	ImGui::End();
 }
 int App::Go()
 {
