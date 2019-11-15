@@ -1,8 +1,34 @@
 #include "Mesh.h"
 #include "imgui/imgui.h"
 #include <unordered_map>
+#include <sstream>
+
 namespace dx = DirectX;
 
+
+ModelException::ModelException(int line, const char* file, std::string note) noexcept
+	:BsException(line,file),
+	note(std::move(note))
+{}
+
+const char* ModelException::what() const noexcept
+{
+	std::ostringstream oss;
+	oss << BsException::what() << std::endl
+		<< "[Note] " << GetNote();
+	whatBuffer = oss.str();
+	return whatBuffer.c_str();
+}
+
+const char* ModelException::GetType() const noexcept
+{
+	return "Model Exception";
+}
+
+const std::string& ModelException::GetNote() const noexcept
+{
+	return note;
+}
 // Mesh
 //생성자에서 바인드 가능한 객체들의 포인터를 넘기는데 이때 인덱스버퍼는 따로 구분하여
 //AddIndexBuffer로 인덱스버퍼 바인딩을 수행한다.하지만 유니크 포인터를 사용하고 있으므로 
@@ -309,4 +335,3 @@ std::unique_ptr<Node> Model::ParseNode(const aiNode& node) noexcept
 
 	return pNode;
 }
-
