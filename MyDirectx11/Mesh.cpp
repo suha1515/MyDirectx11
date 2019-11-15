@@ -76,20 +76,20 @@ DirectX::XMMATRIX Mesh::GetTransformXM() const noexcept
 	노드는 메쉬들의 포인터들을 가지고있어 Draw 함수로 자신의 트랜스폼으로 자신의 노드 메쉬들에 전달하여 그린다.
 	노드는 1개이상의 자식을 가지고있으며 해당 자식들도 노드의 트랜스폼을받고 그린다.
 */
-Node::Node(const std:: string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd
+Node::Node(const std:: string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform_in) noxnd
 	:
 meshPtrs(std::move(meshPtrs)),
 name(name)
 {
-	dx::XMStoreFloat4x4(&baseTransform, transform);
+	dx::XMStoreFloat4x4(&transform, transform_in);
 	dx::XMStoreFloat4x4(&appliedTransform, dx::XMMatrixIdentity());
 }
 //축적된 행렬을 받아서 자신의 트랜스폼과 곱하여 메쉬들과 자식들에 전달하여 그린다.
 void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd
 {
 	const auto built = 
-		dx::XMLoadFloat4x4(&baseTransform) * 
-		dx::XMLoadFloat4x4(&appliedTransform)*
+		dx::XMLoadFloat4x4(&appliedTransform) *
+		dx::XMLoadFloat4x4(&transform)*
 		accumulatedTransform;
 	for (const auto pm : meshPtrs)
 	{

@@ -62,7 +62,7 @@ private:
 	std::vector<Mesh*> meshPtrs;					//노드 메쉬들
 	DirectX::XMFLOAT4X4 transform;					//노드 트랜스폼
 
-	DirectX::XMFLOAT4X4 baseTransform;				//파일에서 나온 트랜스폼
+	DirectX::XMFLOAT4X4 transform;				//파일에서 나온 트랜스폼
 	DirectX::XMFLOAT4X4 appliedTransform;			//모델윈도우에서 적용되는 트랜스폼
 };
 
