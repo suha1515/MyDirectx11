@@ -36,7 +36,7 @@ void Camera::SpwanControlWindow() noexcept
 		ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.f, "%.1f");
 		ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.f, "%.1f");
 		ImGui::Text("Orientation");
-		ImGui::SliderAngle("Pitch", &pitch, -90.0f, 90.f);
+		ImGui::SliderAngle("Pitch", &pitch, 0.995f * -90.0f, 0.995f * 90.f);
 		ImGui::SliderAngle("Yaw", &yaw, -180.f, 180.f);
 		if (ImGui::Button("Reset"))
 			Reset();
