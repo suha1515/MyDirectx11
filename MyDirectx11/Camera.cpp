@@ -1,19 +1,19 @@
 #include "Camera.h"
 #include "imgui/imgui.h"
+#include "BsMath.h"
 
 namespace dx = DirectX;
+
+Camera::Camera() noexcept
+{
+	Reset();
+}
 
 //뷰행렬을 반환한다.
 DirectX::XMMATRIX Camera::GetMatrix() const noexcept
 {
-	const auto pos = dx::XMVector3Transform(
-		dx::XMVectorSet(0.0f, 0.0f, -radius, 0.0f),				//원점으로부터 radius만큼 떨어진다
-		dx::XMMatrixRotationRollPitchYaw(phi, -theta, 0.0f));	//phi,theta가 적도,북극 등을 기준으로 한다는데.. 정확히 설명은 모르겟다.
-		//적도의 위선. 북극과남극의 경선 즉 위선은 원점을 기준으로 좌우로 경선은 상하로 위선,경선 검색
-		//phi 는 경선, theta는 위선.
-	return dx::XMMatrixLookAtLH(pos,dx::XMVectorZero(),			//LookAtLH로 원점을 바라보고,상향벡터를 지정하고 따로 회전행렬을 곱한다.	
-		dx::XMVectorSet(0.0f,1.0f,0.0f,0.0f))*
-		dx::XMMatrixRotationRollPitchYaw(pitch,-yaw,roll);
+	return dx::XMMatrixTranslation(-pos.x, -pos.y, -pos.z) *
+		dx::XMMatrixRotationRollPitchYaw(-pitch, -yaw, 0.0f);
 }
 
 //imgui를 이용한 메뉴구성 카메라 변수들을 조절한다.
@@ -22,12 +22,11 @@ void Camera::SpwanControlWindow() noexcept
 	if (ImGui::Begin("Camera"))
 	{
 		ImGui::Text("Position");
-		ImGui::SliderFloat("Radius", &radius, 0.1f, 80.f, "%.1f");
-		ImGui::SliderAngle("Theta", &theta, -180.0f, 180.0f);
-		ImGui::SliderAngle("Phi", &phi, -89.0f, 89.0f);
+		ImGui::SliderFloat("X", &pos.x, -80.0f, 80.f, "%.1f");
+		ImGui::SliderFloat("Y", &pos.y, -80.0f, 80.f, "%.1f");
+		ImGui::SliderFloat("Z", &pos.z, -80.0f, 80.f, "%.1f");
 		ImGui::Text("Orientation");
-		ImGui::SliderAngle("Roll", &roll, -180.f, 180.f);
-		ImGui::SliderAngle("Pitch", &pitch, -180.f, 180.f);
+		ImGui::SliderAngle("Pitch", &pitch, -90.0f, 90.f);
 		ImGui::SliderAngle("Yaw", &yaw, -180.f, 180.f);
 		if (ImGui::Button("Reset"))
 			Reset();
@@ -37,10 +36,34 @@ void Camera::SpwanControlWindow() noexcept
 //모든 카메라 변수 초기화.
 void Camera::Reset() noexcept
 {
-	radius = 20.0f;
-	theta = 0.0f;
-	phi = 0.0f;
+	pos = { 0.0f,7.5f,-18.0f };
 	pitch = 0.0f;
 	yaw = 0.0f;
-	roll = 0.0f;
+}
+
+//카메라 회전
+void Camera::Rotate(float dx, float dy) noexcept
+{
+	//yaw는 좌우를 보는것이므로 제한이 없다.
+	yaw = wrap_angle(yaw + dx * rotationSpeed);
+	//pitch는 위아래를 보는것인데 일정각도이상은 못보도록 clamp 제한한다.
+	pitch = std::clamp(pitch + dy * rotationSpeed, -PI / 2.0f, PI / 2.0f);
+}
+
+void Camera::Translate(DirectX::XMFLOAT3 translation) noexcept
+{
+	//여기서 translation은 방향벡터가 될것인데 방향벡터에 카메라 회전변환을 적용하고
+	//카메라 스피드만큼 스케일하면서 방향의 속도를 정한다.
+	dx::XMStoreFloat3(&translation, dx::XMVector3Transform(
+		dx::XMLoadFloat3(&translation),
+		dx::XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f) *
+		dx::XMMatrixScaling(travelSpeed, travelSpeed, travelSpeed)
+	));
+
+	//그후 현재위치에 더해주면 카메라이동이다.
+	pos = {
+		pos.x + translation.x,
+		pos.y + translation.y,
+		pos.z + translation.z
+	};
 }
