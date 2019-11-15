@@ -60,9 +60,7 @@ private:
 	std::string name;								//노드별 이름추가.
 	std::vector<std::unique_ptr<Node>> childPtrs;	//자식 노드
 	std::vector<Mesh*> meshPtrs;					//노드 메쉬들
-	DirectX::XMFLOAT4X4 transform;					//노드 트랜스폼
-
-	DirectX::XMFLOAT4X4 transform;				//파일에서 나온 트랜스폼
+	DirectX::XMFLOAT4X4 transform;					//파일에서 나온 트랜스폼
 	DirectX::XMFLOAT4X4 appliedTransform;			//모델윈도우에서 적용되는 트랜스폼
 };
 
