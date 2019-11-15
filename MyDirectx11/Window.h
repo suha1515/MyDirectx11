@@ -67,6 +67,8 @@ public:
 private:
 	void HideCursor();				//마우스 숨기기
 	void ShowCursor();				//마우스 보이기
+	void EnableImGuiMouse();		//imgui 마우스 활성화
+	void DisableImGuiMouse();		//imgui 마우스 활성화
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
@@ -81,3 +83,4 @@ private:
 	HWND hWnd;
 
 };
+
