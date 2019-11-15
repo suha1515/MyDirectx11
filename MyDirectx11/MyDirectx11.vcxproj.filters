@@ -132,13 +132,7 @@
     <ClCompile Include="VertexShader.cpp">
       <Filter>소스 파일\Bindable</Filter>
     </ClCompile>
-    <ClCompile Include="Box.cpp">
-      <Filter>소스 파일\Drawable</Filter>
-    </ClCompile>
     <ClCompile Include="Melon.cpp">
-      <Filter>소스 파일\Drawable</Filter>
-    </ClCompile>
-    <ClCompile Include="Pyramid.cpp">
       <Filter>소스 파일\Drawable</Filter>
     </ClCompile>
     <ClCompile Include="Surface.cpp">
@@ -154,9 +148,6 @@
       <Filter>소스 파일\Bindable</Filter>
     </ClCompile>
     <ClCompile Include="Sheet.cpp">
-      <Filter>소스 파일\Drawable</Filter>
-    </ClCompile>
-    <ClCompile Include="SkinnedBox.cpp">
       <Filter>소스 파일\Drawable</Filter>
     </ClCompile>
     <ClCompile Include="imgui\imgui.cpp">
@@ -187,9 +178,6 @@
       <Filter>01.Light\PointLight</Filter>
     </ClCompile>
     <ClCompile Include="SolidSphere.cpp">
-      <Filter>소스 파일\Drawable</Filter>
-    </ClCompile>
-    <ClCompile Include="Cylinder.cpp">
       <Filter>소스 파일\Drawable</Filter>
     </ClCompile>
     <ClCompile Include="Vertex.cpp">
@@ -269,9 +257,6 @@
     <ClInclude Include="VertexShader.h">
       <Filter>헤더 파일\Bindable</Filter>
     </ClInclude>
-    <ClInclude Include="Box.h">
-      <Filter>헤더 파일\Drawable</Filter>
-    </ClInclude>
     <ClInclude Include="DrawableBase.h">
       <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
@@ -299,9 +284,6 @@
     <ClInclude Include="Melon.h">
       <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
-    <ClInclude Include="Pyramid.h">
-      <Filter>헤더 파일\Drawable</Filter>
-    </ClInclude>
     <ClInclude Include="Surface.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -315,9 +297,6 @@
       <Filter>헤더 파일\Bindable</Filter>
     </ClInclude>
     <ClInclude Include="Sheet.h">
-      <Filter>헤더 파일\Drawable</Filter>
-    </ClInclude>
-    <ClInclude Include="SkinnedBox.h">
       <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imconfig.h">
@@ -354,9 +333,6 @@
       <Filter>01.Light\PointLight</Filter>
     </ClInclude>
     <ClInclude Include="SolidSphere.h">
-      <Filter>헤더 파일\Drawable</Filter>
-    </ClInclude>
-    <ClInclude Include="Cylinder.h">
       <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
     <ClInclude Include="Vertex.h">
