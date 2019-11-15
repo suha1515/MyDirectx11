@@ -1,7 +1,4 @@
 #include "App.h"
-//Drawable-------
-#include "AssetTest.h"
-//---------------
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
