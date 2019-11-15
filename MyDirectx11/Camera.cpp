@@ -12,8 +12,18 @@ Camera::Camera() noexcept
 //뷰행렬을 반환한다.
 DirectX::XMMATRIX Camera::GetMatrix() const noexcept
 {
-	return dx::XMMatrixTranslation(-pos.x, -pos.y, -pos.z) *
-		dx::XMMatrixRotationRollPitchYaw(-pitch, -yaw, 0.0f);
+	//더나은회전
+	using namespace dx;
+
+	const dx::XMVECTOR forwardBaseVector = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
+	// 카메라의 회전을 전방벡터에 적용한다.
+	const auto lookVector = XMVector3Transform(forwardBaseVector,
+		XMMatrixRotationRollPitchYaw(pitch, yaw, 0.0f)
+	);
+	// 카메라 트랜스폼을 만든다 트랜스폼은 모든 상대적인 오브젝트에 대해 적용되며 카메라의 윗방향은 항상 +y 이다
+	const auto camPosition = XMLoadFloat3(&pos);
+	const auto camTarget = camPosition + lookVector;
+	return XMMatrixLookAtLH(camPosition, camTarget, XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
 }
 
 //imgui를 이용한 메뉴구성 카메라 변수들을 조절한다.
