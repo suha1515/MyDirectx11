@@ -241,6 +241,25 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_KILLFOCUS:
 		kbd.ClearState();
 		break;
+	case WM_ACTIVATE:
+		// confine/free cursor on window to foreground/background if cursor disabled
+		if (!cursorEnabled) //커서가 활성화가 아닐떄
+		{
+			//윈도우가 활성화되면
+			if (wParam & WA_ACTIVE)
+			{
+				//다시 마우스 제한
+				ConfineCursor();
+				HideCursor();
+			}
+			else
+			{
+				//비활성화일시 마우스제한 풀기
+				FreeCursor();
+				ShowCursor();
+			}
+		}
+		break;
 		/******************************KEYBOARD MESSAGE***********************************/
 
 		/*********************************MOUSE MESSAGE***********************************/
@@ -259,6 +278,7 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 				SetCapture(hWnd);		//SetCaputure 함수는 마우스가 윈도우 밖으로 나가더라도. 계속해서 마우스의 값을 받는다.
 										//혹은 마우스버튼을 누른채로 윈도우 밖을 나가더라도 캡처를 계속한다.
 				mouse.OnMouseEnfer();
+				HideCursor();
 			}
 		}
 		//클라이언트 영역 밖에 있을경우
@@ -277,6 +297,11 @@ LRESULT Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noe
 	case WM_LBUTTONDOWN:
 	{
 		SetForegroundWindow(hWnd);
+		if (!cursorEnabled)
+		{
+			ConfineCursor();
+			HideCursor();
+		}
 		if (imio.WantCaptureKeyboard)
 			break;
 		const POINTS pt = MAKEPOINTS(lParam);
