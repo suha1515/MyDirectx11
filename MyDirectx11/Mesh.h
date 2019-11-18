@@ -46,17 +46,16 @@ private:
 class Node
 {
 	friend class Model;
-	friend class ModelWindow;			//모델윈도우의 기능에 접근한다.
 public:
 	Node(int id,const std::string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd;
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd;
 	void SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept;	//트랜스폼을 적용한다.
 	int GetId()const noexcept;
+	void ShowTree(Node*& pSelectedNode) const noexcept;
 private:
 	void AddChild(std::unique_ptr<Node> pChild) noxnd;
 	// 인덱스를 통해 직접 노드에 접근할수 있다.
-	void ShowTree(Node*& pSelectedNode) const noexcept;
-	//nodexIdex는 노드별 고유한 인덱스를 제공한다
+	
 private:
 	std::string name;								//노드별 이름추가.
 	int	id;											//노드별 id
