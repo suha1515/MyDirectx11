@@ -312,9 +312,13 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str())));
 
 		// 머터리얼의 스페큘러 맵을 가져온다.
-		material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName);
-		// 스페큘러맵 바인딩. (슬롯을 나누어 텍스쳐는 0에 스페큘러는 1로 지정한다)
-		bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str()),1));
+		// GetTexutre 의 리턴값을 비교하여 해당 머터리얼이 스페큘러 맵이 있는지 검사한다. 있을경우만 바인딩 (일부 물체는 스페큘러가 없을 수 있다)
+		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
+		{
+			// 스페큘러맵 바인딩. (슬롯을 나누어 텍스쳐는 0에 스페큘러는 1로 지정한다)
+			bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str()), 1));
+		}
+		
 		// 샘플러 바인딩.
 		bindablePtrs.push_back(std::make_unique<Bind::Sampler>(gfx));
 
