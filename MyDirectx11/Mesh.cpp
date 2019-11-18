@@ -212,16 +212,20 @@ Model::Model(Graphics& gfx, const std::string fileName)
 	Assimp::Importer imp;
 	const auto pScene = imp.ReadFile(fileName.c_str(),
 		aiProcess_Triangulate |
-		aiProcess_JoinIdenticalVertices
+		aiProcess_JoinIdenticalVertices|
+		aiProcess_ConvertToLeftHanded|
+		aiProcess_GenNormals
 	);
+
+	if (pScene == nullptr)
+		throw ModelException(__LINE__, __FILE__, imp.GetErrorString());
 	//assimp에서는 Scene이라고 입력된 데이터의 루트 구조이다.
 	//모든 구조는 Scene에서 접근한다.
 
-	//해당 오브젝트의 매쉬를 벡터에 삽입
-	for (size_t i = 0; i < pScene->mNumMeshes; i++)
-	{
-		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i]));
-	}
+	//해당 오브젝트의 매쉬를 벡터에 삽입,aiScene에 있는 머터리얼배열 도 같이 파싱한다.
+	for (size_t i = 0; i < pScene->mNumMeshes; ++i)
+		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i], pScene->mMaterials));
+
 	//루트노드를 ParseNode에 전달한다.
 	int nextId = 0;
 	pRoot = ParseNode(nextId ,*pScene->mRootNode);
@@ -245,7 +249,7 @@ Model::~Model() noexcept
 {
 }
 // 오브젝트의 메쉬에 접근하여 정보를 가공한다.
-std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
+std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const aiMaterial* const* pMaterial)
 {
 	//aiMesh는 말그대로 여러정점과 인덱스로 이루어진 기하구조이다.
 	namespace dx = DirectX;
@@ -257,6 +261,11 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh)
 		.Append(VertexLayout::Position3D)
 		.Append(VertexLayout::Normal)
 	));
+
+	// 메쉬는 멤버변수로 매터리얼 배열의 인덱스를 가지고있다.
+	// 인덱스로 메쉬에 대한 머터리얼에 접근할 수 있다.
+	auto& material = *pMaterial[mesh.mMaterialIndex];
+
 	//정점개수만큼 정점버퍼에 삽입한다.
 	//정점버퍼에 동적 레이아웃을 지정하였으므로 해당 레이아웃대로 삽입된다.
 	for (unsigned int i = 0; i < mesh.mNumVertices; i++)

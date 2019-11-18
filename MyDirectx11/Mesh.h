@@ -77,7 +77,12 @@ public:
 	void ShowWindow(const char* windowname = nullptr) noexcept;
 	~Model() noexcept;	//소멸자 구성을 하지않으면 전방선언타입으로 유니크 포인터를 만들수 없다는데 왜그럴까..
 private:
-	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiMesh& mesh);
+
+	// const aiMaterial* const* pMaterial 와 같은.. 구조는
+	// 흔치는 않지만 일단 const aiMaterial* const 는 const 객체를 가르키는 const 포인터이다
+	// 여기서 또뒤에 * 가들어간이유는.. 일단 .aiMaterial은 이중포인터이고 머터리얼 배열을 가르킨다.
+	// 즉 머터리얼의 첫주소가 들어가야하는데 설명으로는 상수가아닌 포인터를 상수포인터에넘기며 그 상수가아닌 포인터는 배열을 가르킨다..? 일단 나중에 자세히 알아보자.
+	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiMesh& mesh,const aiMaterial* const* pMaterial);
 	std::unique_ptr<Node> ParseNode(int& nexId,const aiNode& node) noexcept;
 private:
 	std::unique_ptr<Node> pRoot;
