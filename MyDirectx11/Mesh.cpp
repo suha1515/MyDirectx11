@@ -274,8 +274,11 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	{
 		vbuf.EmplaceBack(
 			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mVertices[i]),
-			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i])
-		);
+			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
+			//assimp에서 텍스처좌표가 이중배열로이루어졌는데 텍스쳐좌표를위해 8개의 채널을 가지고 있다.
+			//아래는 첫번째 채널이다.
+			*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
+		); 
 	}
 
 	// 메쉬들을 aiProcess_Triangulate 즉 삼각형 구조로 받는다
