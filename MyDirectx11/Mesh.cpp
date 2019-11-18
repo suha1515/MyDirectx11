@@ -261,6 +261,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		VertexLayout{}
 		.Append(VertexLayout::Position3D)
 		.Append(VertexLayout::Normal)
+		.Append(VertexLayout::Texture2D)		//텍스쳐좌표값을위해 동적레이아웃 추가설정.
 	));
 
 	// 메쉬는 멤버변수로 매터리얼 배열의 인덱스를 가지고있다.
