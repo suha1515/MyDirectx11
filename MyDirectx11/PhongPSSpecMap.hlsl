@@ -19,6 +19,9 @@ cbuffer ObjectCBuf
 };
 
 Texture2D tex;
+// 스페큘러 맵.
+Texture2D spec;
+
 SamplerState splr;
 
 float4 main(float3 worldPos : POSITION, float3 n : NORMAL,float2 tc : Texcoord) : SV_TARGET
@@ -40,15 +43,15 @@ float4 main(float3 worldPos : POSITION, float3 n : NORMAL,float2 tc : Texcoord) 
     //빛벡터에 대한 반사벡터
     const float3 w = n * dot(vToL, n);
     const float3 r = w * 2.0f - vToL;
-    //시야벡터와 빛반사벡터 사이의 각도를 기반으로 정반사의 강도를 제곱수와 함께 구한다
-    const float3 specular =att* (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(worldPos))), specularPower);
-    //************//
+    
+    
+    const float4 specularSample = spec.Sample(splr, tc);
+    //수치화된 스페큘러가 아닌. 스페큘러맵에서 강도를 가져온다.
+    const float3 specularColorIntensity = specularSample.rgb;
+    const float  specularPower = specularSample.a;
+
+    const float3 specular = att * specularColorIntensity * pow(max(0.0f, dot(normalize(-r), normalize(worldPos))), specularPower);
 
 	// 최종 색 (텍스처 기반 색)
     return float4(saturate(diffuse + ambient + specular), 1.0f) * tex.Sample(splr, tc);
 }
-
-//attenuation 빛 감쇠의 적절한 값을 알고싶으면 아래사이트를 참고할것
-//점광원에 대한 공식도 볼것.
-
-//wiki.orgre3d.org/-point+lightPos+Attenuation

@@ -298,8 +298,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	//바인드가능한 객체들을 담을 벡터 컨테이너
 	std::vector<std::unique_ptr<Bind::Bindable>> bindablePtrs;
 
-	//모든 매쉬가 머터리얼을 가지고 있는것은 아니기때문에
-	//머터리얼을 가지지 않는 메쉬는 머터리얼 인덱스가 음수가 나온다.
+	//스페큘러 맵이 있는지 확인한다.
+	bool hasSpecularMap = false;
 	if (mesh.mMaterialIndex >= 0)
 	{
 		auto& material = *pMaterial[mesh.mMaterialIndex];
@@ -317,6 +317,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		{
 			// 스페큘러맵 바인딩. (슬롯을 나누어 텍스쳐는 0에 스페큘러는 1로 지정한다)
 			bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str()), 1));
+			hasSpecularMap = true;
 		}
 		
 		// 샘플러 바인딩.
@@ -334,23 +335,28 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	auto pvsbc = pvs->GetBytecode();
 	bindablePtrs.push_back(std::move(pvs));
 
-	//픽셀쉐이더를 불러온다 그후 삽입.
-	bindablePtrs.push_back(std::make_unique<Bind::PixelShader>(gfx, L"PhongPS.cso"));
-
 	//정점버퍼로부터 입력레이아웃을 삽입한다.
 	bindablePtrs.push_back(std::make_unique<Bind::InputLayout>(gfx, vbuf.GetLayout().GetD3DLayout(), pvsbc));
 
-	//픽쉘세이더 상수버퍼에 전달하기위한 구조체
-	struct PSMaterialConstant
+	//스페큘러 맵이잇을경우 해당하는 쉐이더를 바인딩한다.
+	if(hasSpecularMap)
+		bindablePtrs.push_back(std::make_unique<Bind::PixelShader>(gfx, L"PhongPSSpecMap.cso"));
+	else
 	{
-		//DirectX::XMFLOAT3 color = { 0.6f,0.6f,0.8f };
-		float specularIntensity = 0.6f;
-		float specularPower = 30.0f;	
-		float padding[2];				//텍스처좌표로 패딩값을 넣는데 원리를 아직 모르겠다.
-	} pmc;
-	//해당 상수버퍼를 픽쉘세이더 슬롯1에 지정후 해당 바인더블 객체를 컨테이너에 삽입
-	bindablePtrs.push_back(std::make_unique<Bind::PixelConstantBuffer<PSMaterialConstant>>(gfx, pmc, 1u));
+		bindablePtrs.push_back(std::make_unique<Bind::PixelShader>(gfx, L"PhongPS.cso"));
 
+		//픽쉘세이더 상수버퍼에 전달하기위한 구조체
+		struct PSMaterialConstant
+		{
+			//DirectX::XMFLOAT3 color = { 0.6f,0.6f,0.8f };
+			float specularIntensity = 1.6f;
+			float specularPower = 50.0f;
+			float padding[2];				//텍스처좌표로 패딩값을 넣는데 원리를 아직 모르겠다.
+		} pmc;
+		//해당 상수버퍼를 픽쉘세이더 슬롯1에 지정후 해당 바인더블 객체를 컨테이너에 삽입
+		bindablePtrs.push_back(std::make_unique<Bind::PixelConstantBuffer<PSMaterialConstant>>(gfx, pmc, 1u));
+	}
+	
 	// 이모든 과정을 거치면 해당 3d 오브젝트를 파싱하여 가공완료되었다.
 	// mesh 객체를 유니크포인터로 할당하여 바인딩컨테이너에서 파이프라인에 바인딩을 진행한다.
 	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
