@@ -102,11 +102,13 @@ void Node::Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const no
 	}
 }
 
-void Node::ShowTree(std::optional<int>& selectedIndex, Node*& pSelectedNode) const noexcept
+void Node::ShowTree( Node*& pSelectedNode) const noexcept
 {
+	//선택된 노드가 없을경우 선택된 ID 값을 -1로 지정한다.
+	const int selectedId = (pSelectedNode == nullptr) ? -1 : pSelectedNode->GetId();
 	// 최근 노드를 위해 플래그를 세운다.
 	const auto node_flags = ImGuiTreeNodeFlags_OpenOnArrow |
-		((GetId() == selectedIndex.value_or(-1)) ? ImGuiTreeNodeFlags_Selected : 0) |
+		((GetId() == selectedId) ? ImGuiTreeNodeFlags_Selected : 0) |
 		((childPtrs.size() == 0) ? ImGuiTreeNodeFlags_Leaf : 0);
 	//만약 노드가 확장되면 재귀로 자식들을 그린다.
 	const auto expanded = ImGui::TreeNodeEx(
@@ -115,14 +117,13 @@ void Node::ShowTree(std::optional<int>& selectedIndex, Node*& pSelectedNode) con
 
 	if (ImGui::IsItemClicked())
 	{
-		selectedIndex = GetId();
 		pSelectedNode = const_cast<Node*>(this);
 	}
 	if (expanded)
 	{
 		for (const auto& pChild : childPtrs)
 		{
-			pChild->ShowTree(selectedIndex, pSelectedNode);
+			pChild->ShowTree(pSelectedNode);
 		}
 		ImGui::TreePop();
 	}
@@ -156,10 +157,10 @@ public:
 		if (ImGui::Begin(windowName))
 		{
 			ImGui::Columns(2, nullptr, true);
-			root.ShowTree(selectedIndex,pSelectedNode);
+			root.ShowTree(pSelectedNode);
 			if (pSelectedNode != nullptr)//선택된 노드가 있을경우만 gui 표시
 			{
-				auto& transform = transforms[*selectedIndex];
+				auto& transform = transforms[pSelectedNode->GetId()];
 				ImGui::NextColumn();
 				ImGui::Text("Orientation");
 				ImGui::SliderAngle("Roll", &transform.roll, -180.0f, 180.0f);
@@ -175,7 +176,8 @@ public:
 	}
 	dx::XMMATRIX GetTransform() const noexcept
 	{
-		const auto& transform = transforms.at(*selectedIndex);
+		assert(pSelectedNode != nullptr);
+		const auto& transform = transforms.at(pSelectedNode->GetId());
 		return
 			dx::XMMatrixRotationRollPitchYaw(transform.roll, transform.pitch, transform.yaw) *
 			dx::XMMatrixTranslation(transform.x, transform.y, transform.z);

@@ -55,7 +55,7 @@ public:
 private:
 	void AddChild(std::unique_ptr<Node> pChild) noxnd;
 	// 인덱스를 통해 직접 노드에 접근할수 있다.
-	void ShowTree(std::optional<int>& selectedIndex,Node*& pSelectedNode) const noexcept;
+	void ShowTree(Node*& pSelectedNode) const noexcept;
 	//nodexIdex는 노드별 고유한 인덱스를 제공한다
 private:
 	std::string name;								//노드별 이름추가.
