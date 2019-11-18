@@ -300,6 +300,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 
 	//스페큘러 맵이 있는지 확인한다.
 	bool hasSpecularMap = false;
+	float shininess = 35.0f;
 	if (mesh.mMaterialIndex >= 0)
 	{
 		auto& material = *pMaterial[mesh.mMaterialIndex];
@@ -319,6 +320,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 			bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str()), 1));
 			hasSpecularMap = true;
 		}
+		else
+			material.Get(AI_MATKEY_SHININESS, shininess);	//매개변수는 3개를받지만 매크로가 2개로되어있다..
 		
 		// 샘플러 바인딩.
 		bindablePtrs.push_back(std::make_unique<Bind::Sampler>(gfx));
@@ -350,9 +353,10 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		{
 			//DirectX::XMFLOAT3 color = { 0.6f,0.6f,0.8f };
 			float specularIntensity = 0.8f;
-			float specularPower = 40.0f;
+			float specularPower;
 			float padding[2];				//텍스처좌표로 패딩값을 넣는데 원리를 아직 모르겠다.
 		} pmc;
+		pmc.specularPower = shininess;
 		//해당 상수버퍼를 픽쉘세이더 슬롯1에 지정후 해당 바인더블 객체를 컨테이너에 삽입
 		bindablePtrs.push_back(std::make_unique<Bind::PixelConstantBuffer<PSMaterialConstant>>(gfx, pmc, 1u));
 	}
