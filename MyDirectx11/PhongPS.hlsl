@@ -12,13 +12,15 @@
 //오브젝트 고유의 색과 빛나는정도를 정한다.
 cbuffer ObjectCBuf
 {
-    float3  materialColor;      //머터리얼 색
     float   specularIntensity;  //정반사 강도
     float   specularPower;      //정반사 승수
+    float   padding[2];
 };
 
+Texture2D tex;
+SamplerState splr;
 
-float4 main(float3 worldPos : POSITION, float3 n : NORMAL) : SV_TARGET
+float4 main(float3 worldPos : POSITION, float3 n : NORMAL,float2 tc : Texcoord) : SV_TARGET
 {
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
 	const float3 vToL = lightPos - worldPos;
@@ -41,8 +43,8 @@ float4 main(float3 worldPos : POSITION, float3 n : NORMAL) : SV_TARGET
     const float3 specular =att* (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(worldPos))), specularPower);
     //************//
 
-	// 최종 색
-    return float4(saturate(diffuse+ambient+specular)*materialColor,1.0f);
+	// 최종 색 (텍스처 기반 색)
+    return float4(saturate(diffuse + ambient + specular), 1.0f) * tex.Sample(splr, tc);
 }
 
 //attenuation 빛 감쇠의 적절한 값을 알고싶으면 아래사이트를 참고할것
