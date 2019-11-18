@@ -302,13 +302,19 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	//머터리얼을 가지지 않는 메쉬는 머터리얼 인덱스가 음수가 나온다.
 	if (mesh.mMaterialIndex >= 0)
 	{
-		using namespace std::string_literals;
 		auto& material = *pMaterial[mesh.mMaterialIndex];
+		using namespace std::string_literals;
+		const auto base = "Models\\nano_textured\\"s;
 		aiString texFileName;
 		// 머터리얼의 텍스쳐이름을 가져온다
 		material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
 		// 해당 텍스쳐이름을 기반으로 텍스쳐리소스를 바인딩한다.
-		bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile("Models\\nano_textured\\"s + texFileName.C_Str())));
+		bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str())));
+
+		// 머터리얼의 스페큘러 맵을 가져온다.
+		material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName);
+		// 스페큘러맵 바인딩. (슬롯을 나누어 텍스쳐는 0에 스페큘러는 1로 지정한다)
+		bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str()),1));
 		// 샘플러 바인딩.
 		bindablePtrs.push_back(std::make_unique<Bind::Sampler>(gfx));
 

@@ -6,7 +6,8 @@ namespace Bind
 {
 	namespace wrl = Microsoft::WRL;
 
-	Texture::Texture(Graphics& gfx, const Surface& s)
+	Texture::Texture(Graphics& gfx, const Surface& s,unsigned int slot)
+		:slot(slot)
 	{
 		INFOMAN(gfx);
 
@@ -48,7 +49,8 @@ namespace Bind
 	void Texture::Bind(Graphics& gfx) noexcept
 	{
 		//만들어진 텍스처에 대한 쉐이더 리소스 뷰를 픽셀쉐이더리소스에 바인딩한다
-		GetContext(gfx)->PSSetShaderResources(0u, 1u, pTextureView.GetAddressOf());
+		// slot 변수의 추가로 텍스쳐 자원에대해 슬롯에 따라 따로 지정할 수 있다.
+		GetContext(gfx)->PSSetShaderResources(slot, 1u, pTextureView.GetAddressOf());
 
 	}
 }
