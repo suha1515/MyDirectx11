@@ -45,7 +45,8 @@ float4 main(float3 worldPos : POSITION, float3 n : NORMAL,float2 tc : Texcoord) 
     //************//
 
 	// 최종 색 (텍스처 기반 색)
-    return float4(saturate(diffuse + ambient + specular), 1.0f) * tex.Sample(splr, tc);
+    //return float4(saturate(diffuse + ambient + specular), 1.0f) * tex.Sample(splr, tc);
+    return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specular), 1.0f);
 }
 
 //attenuation 빛 감쇠의 적절한 값을 알고싶으면 아래사이트를 참고할것

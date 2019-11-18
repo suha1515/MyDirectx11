@@ -349,8 +349,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		struct PSMaterialConstant
 		{
 			//DirectX::XMFLOAT3 color = { 0.6f,0.6f,0.8f };
-			float specularIntensity = 1.6f;
-			float specularPower = 50.0f;
+			float specularIntensity = 0.8f;
+			float specularPower = 40.0f;
 			float padding[2];				//텍스처좌표로 패딩값을 넣는데 원리를 아직 모르겠다.
 		} pmc;
 		//해당 상수버퍼를 픽쉘세이더 슬롯1에 지정후 해당 바인더블 객체를 컨테이너에 삽입
