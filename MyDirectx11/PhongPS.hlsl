@@ -21,6 +21,7 @@ cbuffer ObjectCBuf
 Texture2D tex;
 SamplerState splr;
 
+
 float4 main(float3 worldPos : POSITION, float3 n : NORMAL,float2 tc : Texcoord) : SV_TARGET
 {
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
