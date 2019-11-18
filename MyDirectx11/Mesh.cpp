@@ -265,6 +265,13 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	// 메쉬는 멤버변수로 매터리얼 배열의 인덱스를 가지고있다.
 	// 인덱스로 메쉬에 대한 머터리얼에 접근할 수 있다.
 	auto& material = *pMaterial[mesh.mMaterialIndex];
+	//단순히 디버깅통해 프로퍼티를 확인하기위한 용도
+	for (int i = 0; i < material.mNumProperties;++i)
+	{
+		auto& prop = *material.mProperties[i];
+		int qqq = 90;
+	}
+
 
 	//정점개수만큼 정점버퍼에 삽입한다.
 	//정점버퍼에 동적 레이아웃을 지정하였으므로 해당 레이아웃대로 삽입된다.
