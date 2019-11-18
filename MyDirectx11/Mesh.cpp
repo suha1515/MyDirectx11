@@ -331,12 +331,12 @@ std::unique_ptr<Node> Model::ParseNode(int& nextId,const aiNode& node) noexcept
 		curMeshPtrs.push_back(meshPtrs.at(meshIdx).get());
 	}
 	//구성된 메쉬 컨테이너와함께 트랜스폼으로 노드객체를 할당한다.
-	auto pNode = std::make_unique<Node>(node.mName.C_Str(),std::move(curMeshPtrs), transform);
+	auto pNode = std::make_unique<Node>(nextId++,node.mName.C_Str(),std::move(curMeshPtrs), transform);
 	//만약 노드에 자식이 있을경우 자식 개수만큼 추가한다.
 	for (size_t i = 0; i < node.mNumChildren; i++)
 	{
 		//여기서 재귀호출로 자식에서도 노드정보를 구성하게 될것이다.
-		pNode->AddChild(ParseNode(*node.mChildren[i]));
+		pNode->AddChild(ParseNode(nextId,*node.mChildren[i]));
 	}
 
 	return pNode;
