@@ -4,17 +4,18 @@
     float3 ambient;             //ÁÖº¯±¤
     float3 diffuseColor;        //È®»ê±¤
     float  diffuseIntensity;    //È®»ê±¤ ¼¼±â
-    float attConst;             //ºû°¨¼â »ó¼ö
-    float attLin;               //ºû°¨¼â °Å¸®
+    float attConst;             //ºû °¨¼â »ó¼ö
+    float attLin;               //ºû °¨¼â °Å¸®
     float attQuad;              //ºû °¨¼â Á¤¹æÃ¼
 };
 
 //¿ÀºêÁ§Æ® °íÀ¯ÀÇ »ö°ú ºû³ª´ÂÁ¤µµ¸¦ Á¤ÇÑ´Ù.
 cbuffer ObjectCBuf
 {
+    //float3  materialColor;
     float   specularIntensity;  //Á¤¹Ý»ç °­µµ
-    float   specularPower;      //Á¤¹Ý»ç ½Â¼ö
-    float   padding[2];
+    float   specularPower;      //Á¤¹Ý»ç ½Â¼ö   
+    //float   padding[2];          //ÆÐµù
 };
 
 Texture2D tex;

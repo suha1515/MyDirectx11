@@ -309,7 +309,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
 		// 해당 텍스쳐이름을 기반으로 텍스쳐리소스를 바인딩한다.
 		bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile("Models\\nano_textured\\"s + texFileName.C_Str())));
-		//  샘플러 바인딩.
+		// 샘플러 바인딩.
 		bindablePtrs.push_back(std::make_unique<Bind::Sampler>(gfx));
 
 	}
@@ -333,9 +333,10 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	//픽쉘세이더 상수버퍼에 전달하기위한 구조체
 	struct PSMaterialConstant
 	{
+		//DirectX::XMFLOAT3 color = { 0.6f,0.6f,0.8f };
 		float specularIntensity = 0.6f;
-		float specularPower = 30.0f;
-		float padding[2];
+		float specularPower = 30.0f;	
+		float padding[2];				//텍스처좌표로 패딩값을 넣는데 원리를 아직 모르겠다.
 	} pmc;
 	//해당 상수버퍼를 픽쉘세이더 슬롯1에 지정후 해당 바인더블 객체를 컨테이너에 삽입
 	bindablePtrs.push_back(std::make_unique<Bind::PixelConstantBuffer<PSMaterialConstant>>(gfx, pmc, 1u));
