@@ -344,11 +344,11 @@
     <ClInclude Include="ConditionalNoexcept.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="BindableCommon.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="Mesh.h">
       <Filter>헤더 파일\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="BindableCommon.h">
+      <Filter>헤더 파일\Bindable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "imgui/imgui.h"
+#include "Surface.h"
 #include <unordered_map>
 #include <sstream>
 
@@ -265,13 +266,6 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	// 메쉬는 멤버변수로 매터리얼 배열의 인덱스를 가지고있다.
 	// 인덱스로 메쉬에 대한 머터리얼에 접근할 수 있다.
 	auto& material = *pMaterial[mesh.mMaterialIndex];
-	//단순히 디버깅통해 프로퍼티를 확인하기위한 용도
-	for (int i = 0; i < material.mNumProperties;++i)
-	{
-		auto& prop = *material.mProperties[i];
-		int qqq = 90;
-	}
-
 
 	//정점개수만큼 정점버퍼에 삽입한다.
 	//정점버퍼에 동적 레이아웃을 지정하였으므로 해당 레이아웃대로 삽입된다.
@@ -299,6 +293,23 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	}
 	//바인드가능한 객체들을 담을 벡터 컨테이너
 	std::vector<std::unique_ptr<Bind::Bindable>> bindablePtrs;
+
+	//모든 매쉬가 머터리얼을 가지고 있는것은 아니기때문에
+	//머터리얼을 가지지 않는 메쉬는 머터리얼 인덱스가 음수가 나온다.
+	if (mesh.mMaterialIndex >= 0)
+	{
+		using namespace std::string_literals;
+		auto& material = *pMaterial[mesh.mMaterialIndex];
+		aiString texFileName;
+		// 머터리얼의 텍스쳐이름을 가져온다
+		material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
+		// 해당 텍스쳐이름을 기반으로 텍스쳐리소스를 바인딩한다.
+		bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile("Models\\nano_textured\\"s + texFileName.C_Str())));
+		//  샘플러 바인딩.
+		bindablePtrs.push_back(std::make_unique<Bind::Sampler>(gfx));
+
+	}
+
 	//위에서 준비한 정점,인덱스버퍼를 삽입
 	bindablePtrs.push_back(std::make_unique<Bind::VertexBuffer>(gfx, vbuf));
 
