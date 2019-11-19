@@ -26,7 +26,7 @@ Melon::Melon(Graphics& gfx,
 {
 	namespace dx = DirectX;
 
-		auto pvs = std::make_shared<Bind::VertexShader>(gfx, L"ColorIndexVS.cso");
+		auto pvs = std::make_shared<Bind::VertexShader>(gfx, "ColorIndexVS.cso");
 		auto pvsbc = pvs->GetBytecode();
 		AddBind(std::move(pvs));
 

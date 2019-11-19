@@ -323,7 +323,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	bindablePtrs.push_back(std::make_shared<Bind::IndexBuffer>(gfx, indices));
 
 	//정점쉐이더를 불러온다 그후 삽입.
-	auto pvs = std::make_unique<Bind::VertexShader>(gfx, L"PhongVS.cso");
+	auto pvs = std::make_unique<Bind::VertexShader>(gfx, "PhongVS.cso");
 	auto pvsbc = pvs->GetBytecode();
 	bindablePtrs.push_back(std::move(pvs));
 

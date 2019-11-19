@@ -347,6 +347,9 @@
     <ClInclude Include="BindableCommon.h">
       <Filter>헤더 파일\Bindable</Filter>
     </ClInclude>
+    <ClInclude Include="BindableCodex.h">
+      <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MyDirectx11.rc">

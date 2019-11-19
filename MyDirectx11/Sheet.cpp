@@ -47,7 +47,7 @@ Sheet::Sheet(Graphics& gfx,
 
 		AddBind(std::make_shared<Bind::Sampler>(gfx));
 
-		auto pvs = std::make_shared<Bind::VertexShader>(gfx, L"TextureVS.cso");
+		auto pvs = std::make_shared<Bind::VertexShader>(gfx, "TextureVS.cso");
 		auto pvsbc = pvs->GetBytecode();
 		AddBind(std::move(pvs));
 
