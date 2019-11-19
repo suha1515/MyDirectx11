@@ -31,6 +31,7 @@ void App::DoFrame()
 
 	//모델 그리기
 	nano.Draw(wnd.Gfx());
+	nano2.Draw(wnd.Gfx());
 
 	//광원의 위치를 그린다.
 	light.Draw(wnd.Gfx());
@@ -101,7 +102,8 @@ void App::DoFrame()
 	cam.SpwanControlWindow();
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
-	nano.ShowWindow();
+	nano.ShowWindow("Model 1");
+	nano2.ShowWindow("Model 2");
 
 
 	//present

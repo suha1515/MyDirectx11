@@ -32,5 +32,7 @@ private:
 	Camera cam;
 	PointLight light;
 	Model nano{ wnd.Gfx(),"Models\\nano_textured\\nanosuit.obj" };
+	// 다수의 모델이 바인딩 객체를 공유하는지 시험
+	Model nano2{ wnd.Gfx(),"Models\\nano_textured\\nanosuit.obj" };
 };
 
