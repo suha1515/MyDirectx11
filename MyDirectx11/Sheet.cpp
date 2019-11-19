@@ -41,7 +41,7 @@ Sheet::Sheet(Graphics& gfx,
 		model.vertices[2].Attr<Dvtx::VertexLayout::Texture2D>() = { 0.0f,1.0f };
 		model.vertices[3].Attr<Dvtx::VertexLayout::Texture2D>() = { 1.0f,1.0f };
 
-		AddBind(std::make_shared<Bind::Texture>(gfx, Surface::FromFile("Images\\MyCat2.png")));
+		AddBind(std::make_shared<Bind::Texture>(gfx,"Images\\MyCat2.png"));
 
 		AddBind(std::make_shared<Bind::VertexBuffer>(gfx, model.vertices));
 
@@ -51,11 +51,11 @@ Sheet::Sheet(Graphics& gfx,
 		auto pvsbc = pvs->GetBytecode();
 		AddBind(std::move(pvs));
 
-		AddBind(std::make_shared<Bind::PixelShader>(gfx, L"TexturePS.cso"));
+		AddBind(std::make_shared<Bind::PixelShader>(gfx, "TexturePS.cso"));
 
 		AddBind(std::make_shared<Bind::IndexBuffer>(gfx, model.indices));
 
-		AddBind(std::make_shared<InputLayout>(gfx, model.vertices.GetLayout().GetD3DLayout(), pvsbc));
+		AddBind(std::make_shared<InputLayout>(gfx, model.vertices.GetLayout(), pvsbc));
 
 
 		AddBind(std::make_shared<Bind::Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));

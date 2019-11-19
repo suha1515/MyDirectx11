@@ -299,14 +299,14 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		// 머터리얼의 텍스쳐이름을 가져온다
 		material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
 		// 해당 텍스쳐이름을 기반으로 텍스쳐리소스를 바인딩한다.
-		bindablePtrs.push_back(std::make_shared<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str())));
+		bindablePtrs.push_back(std::make_shared<Bind::Texture>(gfx,base + texFileName.C_Str()));
 
 		// 머터리얼의 스페큘러 맵을 가져온다.
 		// GetTexutre 의 리턴값을 비교하여 해당 머터리얼이 스페큘러 맵이 있는지 검사한다. 있을경우만 바인딩 (일부 물체는 스페큘러가 없을 수 있다)
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
 		{
 			// 스페큘러맵 바인딩. (슬롯을 나누어 텍스쳐는 0에 스페큘러는 1로 지정한다)
-			bindablePtrs.push_back(std::make_shared<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str()), 1));
+			bindablePtrs.push_back(std::make_shared<Bind::Texture>(gfx, base + texFileName.C_Str(), 1));
 			hasSpecularMap = true;
 		}
 		else
@@ -328,14 +328,14 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	bindablePtrs.push_back(std::move(pvs));
 
 	//정점버퍼로부터 입력레이아웃을 삽입한다.
-	bindablePtrs.push_back(std::make_shared<Bind::InputLayout>(gfx, vbuf.GetLayout().GetD3DLayout(), pvsbc));
+	bindablePtrs.push_back(std::make_shared<Bind::InputLayout>(gfx, vbuf.GetLayout(), pvsbc));
 
 	//스페큘러 맵이잇을경우 해당하는 쉐이더를 바인딩한다.
 	if(hasSpecularMap)
-		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, L"PhongPSSpecMap.cso"));
+		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, "PhongPSSpecMap.cso"));
 	else
 	{
-		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, L"PhongPS.cso"));
+		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, "PhongPS.cso"));
 
 		//픽쉘세이더 상수버퍼에 전달하기위한 구조체
 		struct PSMaterialConstant

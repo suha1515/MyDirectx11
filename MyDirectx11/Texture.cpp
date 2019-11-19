@@ -1,15 +1,21 @@
 #include "Texture.h"
 #include "Surface.h"
 #include "GraphicsThrowMacros.h"
+#include "BindableCodex.h"
 
 namespace Bind
 {
 	namespace wrl = Microsoft::WRL;
 
-	Texture::Texture(Graphics& gfx, const Surface& s,unsigned int slot)
-		:slot(slot)
+	Texture::Texture(Graphics& gfx, const std::string& path, UINT slot)
+		:
+		path(path),
+		slot(slot)
 	{
 		INFOMAN(gfx);
+
+		// load surface 텍스처 로딩.
+		const auto s = Surface::FromFile(path);
 
 		//텍스처 자원을 만든다
 		//텍스처를 만들기위해 텍스처를 설명하는 구조체를 만든다. (버퍼만들기와 같다)
@@ -52,5 +58,19 @@ namespace Bind
 		// slot 변수의 추가로 텍스쳐 자원에대해 슬롯에 따라 따로 지정할 수 있다.
 		GetContext(gfx)->PSSetShaderResources(slot, 1u, pTextureView.GetAddressOf());
 
+	}
+	std::shared_ptr<Bindable> Texture::Resolve(Graphics& gfx, const std::string& path, UINT slot)
+	{
+		return Codex::Resolve<Texture>(gfx, path, slot);
+	}
+	std::string Texture::GenerateUID(const std::string& path, UINT slot)
+	{
+		//텍스쳐 바인딩 객체는 경로와 슬롯으로 UID를 구분짓는다.
+		using namespace std::string_literals;
+		return typeid(Texture).name() + "#"s + path + "#" + std::to_string(slot);
+	}
+	std::string Texture::GetUID() const noexcept
+	{
+		return GenerateUID(path, slot);
 	}
 }

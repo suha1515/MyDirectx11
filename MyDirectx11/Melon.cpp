@@ -30,7 +30,7 @@ Melon::Melon(Graphics& gfx,
 		auto pvsbc = pvs->GetBytecode();
 		AddBind(std::move(pvs));
 
-		AddBind(std::make_shared<Bind::PixelShader>(gfx, L"ColorIndexPS.cso"));
+		AddBind(std::make_shared<Bind::PixelShader>(gfx, "ColorIndexPS.cso"));
 
 		struct PixelShaderConstants
 		{
@@ -55,23 +55,24 @@ Melon::Melon(Graphics& gfx,
 				{ 0.0f,0.0f,0.0f },
 			}
 		};
+		struct Vertex
+		{
+			dx::XMFLOAT3 pos;
+		};
+		auto model = Sphere::Make();
+		// deform vertices of model by linear transformation
+		model.Transform(dx::XMMatrixScaling(1.0f, 1.0f, 1.2f));
+
 		AddBind(std::make_shared<Bind::PixelConstantBuffer<PixelShaderConstants>>(gfx, cb2));
 
 		const std::vector<D3D11_INPUT_ELEMENT_DESC> ied =
 		{
 			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
 		};
-		AddBind(std::make_shared<Bind::InputLayout>(gfx, ied, pvsbc));
+		AddBind(std::make_shared<Bind::InputLayout>(gfx, model.vertices.GetLayout(), pvsbc));
 
 		AddBind(std::make_shared<Bind::Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
-	struct Vertex
-	{
-		dx::XMFLOAT3 pos;
-	};
-	auto model = Sphere::Make();
-	// deform vertices of model by linear transformation
-	model.Transform(dx::XMMatrixScaling(1.0f, 1.0f, 1.2f));
 
 	AddBind(std::make_shared<Bind::VertexBuffer>(gfx, model.vertices));
 

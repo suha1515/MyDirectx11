@@ -19,9 +19,9 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 	auto pvsbc = pvs->GetBytecode();
 	AddBind(std::move(pvs));
 
-	AddBind(std::make_shared<PixelShader>(gfx, L"SolidPs.cso"));
+	AddBind(std::make_shared<PixelShader>(gfx, "SolidPs.cso"));
 
-	AddBind(std::make_shared<InputLayout>(gfx, model.vertices.GetLayout().GetD3DLayout(), pvsbc));
+	AddBind(std::make_shared<InputLayout>(gfx, model.vertices.GetLayout(), pvsbc));
 
 	struct PSColorConstant
 	{

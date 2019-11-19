@@ -8,11 +8,15 @@ namespace Bind
 	class Texture :public Bindable
 	{
 	public:
-		Texture(Graphics& gfx, const class Surface& s,unsigned int slot =0);
+		Texture(Graphics& gfx, const std::string& path,UINT slot =0);
 		void Bind(Graphics& gfx) noexcept override;
+		static std::shared_ptr<Bindable> Resolve(Graphics& gfx, const std::string& path, UINT slot);
+		static std::string GenerateUID(const std::string& path, UINT slot);
+		std::string GetUID() const noexcept override;
 	private:
 		unsigned int slot; //다중 텍스쳐를 위한 슬롯
 	protected:
+		std::string path;
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> pTextureView;
 		//쉐이더에 묶이는 텍스처 자원이다.
 	};

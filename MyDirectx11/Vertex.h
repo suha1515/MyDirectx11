@@ -39,48 +39,57 @@ namespace Dvtx
 		//템플릿 기법으로 기존에 레이아웃을 좀더 간편하게 정리한다
 		//템플릿의 특수화를 이용하여 Map<ElementType>에 해당하는 구조체멤버들을 제공한다.
 		//컴파일타임에 접근하기위해 static constexpr 키워드를 사용하였다.
+
+		//code는 코덱스에서 바인딩 객체인 레이아웃을 구분하기위해 사용된다.
 		template<ElementType> struct Map;
 		template<> struct Map<Position2D>
 		{
 			using SysType = DirectX::XMFLOAT2;
 			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32_FLOAT;
 			static constexpr const char* semantic = "Position";
+			static constexpr const char* code = "P2";
 		};
 		template<> struct Map<Position3D>
 		{
 			using SysType = DirectX::XMFLOAT3;
 			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 			static constexpr const char* semantic = "Position";
+			static constexpr const char* code = "P3";
 		};
 		template<> struct Map<Texture2D>
 		{
 			using SysType = DirectX::XMFLOAT2;
 			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32_FLOAT;
 			static constexpr const char* semantic = "Texcoord";
+			static constexpr const char* code = "T2";
 		};
 		template<> struct Map<Normal>
 		{
 			using SysType = DirectX::XMFLOAT3;
 			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 			static constexpr const char* semantic = "Normal";
+			static constexpr const char* code = "N";
 		};
 		template<> struct Map<Float3Color>
 		{
 			using SysType = DirectX::XMFLOAT3;
 			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 			static constexpr const char* semantic = "Color";
+			static constexpr const char* code = "C3";
 		};
 		template<> struct Map<Float4Color>
 		{
 			using SysType = DirectX::XMFLOAT4;
 			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 			static constexpr const char* semantic = "Color";
+			static constexpr const char* code = "C4";
 		};
 		template<> struct Map<BGRAColor>
 		{
 			using SysType = ::BGRAColor;
 			static constexpr DXGI_FORMAT dxgiFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 			static constexpr const char* semantic = "Color";
+			static constexpr const char* code = "C8";
 		};
 		class Element
 		{
@@ -92,9 +101,11 @@ namespace Dvtx
 			static constexpr size_t SizeOf(ElementType type) noxnd;
 			ElementType GetType() const noexcept;
 			D3D11_INPUT_ELEMENT_DESC GetDesc() const noxnd;
+			//각 원소마다 코드를 가지고있다 (UID 비교용)
+			const char* GetCode() const noexcept;
 		private:
 			template<ElementType type>
-			static constexpr D3D11_INPUT_ELEMENT_DESC GenerateDesc(size_t offset) noxnd
+			static constexpr D3D11_INPUT_ELEMENT_DESC GenerateDesc(size_t offset) noexcept
 			{
 				return { Map<type>::semantic,0,Map<type>::dxgiFormat,0,(UINT)offset,D3D11_INPUT_PER_VERTEX_DATA,0 };
 			}
@@ -122,6 +133,8 @@ namespace Dvtx
 		size_t Size() const noxnd;
 		size_t GetElementCount() const noexcept;
 		std::vector<D3D11_INPUT_ELEMENT_DESC> GetD3DLayout() const noxnd;
+		//레이아웃 전체 원소의 코드를 얻는다 (레이아웃의 UID)
+		std::string GetCode() const noxnd;
 	private:
 		std::vector<Element> elements; //정점 원소를 담는 컨테이너
 	};

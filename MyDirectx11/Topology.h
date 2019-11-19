@@ -8,6 +8,10 @@ namespace Bind
 	public:
 		Topology(Graphics& gfx, D3D11_PRIMITIVE_TOPOLOGY type);
 		void Bind(Graphics& gfx) noexcept override;
+		static std::shared_ptr<Bindable> Resolve(Graphics& gfx, D3D11_PRIMITIVE_TOPOLOGY type);
+		static std::string GenerateUID(D3D11_PRIMITIVE_TOPOLOGY type);
+		//Topology 바인딩 객체 UID 체크 함수.
+		std::string GetUID() const noexcept override;
 	protected:
 		D3D11_PRIMITIVE_TOPOLOGY type;
 	};
