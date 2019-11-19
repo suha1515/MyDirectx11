@@ -186,6 +186,9 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>소스 파일\Mesh</Filter>
     </ClCompile>
+    <ClCompile Include="TestPlane.cpp">
+      <Filter>소스 파일\Drawable</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Window.h">
@@ -349,6 +352,9 @@
     </ClInclude>
     <ClInclude Include="BindableCodex.h">
       <Filter>헤더 파일\Bindable</Filter>
+    </ClInclude>
+    <ClInclude Include="TestPlane.h">
+      <Filter>헤더 파일\Drawable</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

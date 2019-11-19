@@ -10,6 +10,7 @@
 #include "ImguiManager.h"
 #include "Camera.h"
 #include "PointLight.h"
+#include "TestPlane.h"
 #include "Mesh.h"
 #include <set>
 
@@ -34,5 +35,6 @@ private:
 	Model nano{ wnd.Gfx(),"Models\\nano_textured\\nanosuit.obj" };
 	// 다수의 모델이 바인딩 객체를 공유하는지 시험
 	Model nano2{ wnd.Gfx(),"Models\\nano_textured\\nanosuit.obj" };
+	TestPlane plane;
 };
 
