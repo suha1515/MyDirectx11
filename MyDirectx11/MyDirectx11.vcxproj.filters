@@ -257,9 +257,6 @@
     <ClInclude Include="VertexShader.h">
       <Filter>헤더 파일\Bindable</Filter>
     </ClInclude>
-    <ClInclude Include="DrawableBase.h">
-      <Filter>헤더 파일\Drawable</Filter>
-    </ClInclude>
     <ClInclude Include="IndexedTriangleList.h">
       <Filter>헤더 파일\Geometry</Filter>
     </ClInclude>

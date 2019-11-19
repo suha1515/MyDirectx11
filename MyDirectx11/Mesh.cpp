@@ -36,27 +36,16 @@ const std::string& ModelException::GetNote() const noexcept
 //생성자 인수로 유니크포인터 벡터로 받으므로 따로 pi를 유니크 포인터로 전달해야하므로 오직 1개만 유니크포인트가
 //가르키고 있어야하므로 나머지 한개는 Release 해주어야 한다
 //바인드 포인터들을 인덱스버퍼 포인터로 캐스팅한다.
-Mesh::Mesh(Graphics& gfx, std::vector<std::unique_ptr<Bind::Bindable>> bindPtrs)
+Mesh::Mesh(Graphics& gfx, std::vector<std::shared_ptr<Bind::Bindable>> bindPtrs)
 {
-	if (!IsStaticInitialized())
-	{
-		AddStaticBind(std::make_unique<Bind::Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
-	}
+		AddBind(std::make_shared<Bind::Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
 	for (auto& pb : bindPtrs)
 	{
-		if (auto pi = dynamic_cast<Bind::IndexBuffer*>(pb.get()))
-		{
-			AddIndexBuffer(std::unique_ptr<Bind::IndexBuffer>{ pi });
-			pb.release();
-		}
-		else//인덱스버퍼 그외의 것은 Bind를 호출한다.
-		{
 			AddBind(std::move(pb));
-		}
 	}
 	//정점쉐이더에서 사용할 트랜스폼 바인딩
-	AddBind(std::make_unique<Bind::TransformCbuf>(gfx, *this));
+	AddBind(std::make_shared<Bind::TransformCbuf>(gfx, *this));
 }
 // 그리기를 담당하는 함수이다.
 	// 인자 행렬은 노드시스템에서 자식일경우 부모로부터의 행렬이 축적되어 사용되기에 accumlatedTransform 이다.
@@ -296,7 +285,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		indices.push_back(face.mIndices[2]);
 	}
 	//바인드가능한 객체들을 담을 벡터 컨테이너
-	std::vector<std::unique_ptr<Bind::Bindable>> bindablePtrs;
+	std::vector<std::shared_ptr<Bind::Bindable>> bindablePtrs;
 
 	//스페큘러 맵이 있는지 확인한다.
 	bool hasSpecularMap = false;
@@ -310,14 +299,14 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		// 머터리얼의 텍스쳐이름을 가져온다
 		material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
 		// 해당 텍스쳐이름을 기반으로 텍스쳐리소스를 바인딩한다.
-		bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str())));
+		bindablePtrs.push_back(std::make_shared<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str())));
 
 		// 머터리얼의 스페큘러 맵을 가져온다.
 		// GetTexutre 의 리턴값을 비교하여 해당 머터리얼이 스페큘러 맵이 있는지 검사한다. 있을경우만 바인딩 (일부 물체는 스페큘러가 없을 수 있다)
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
 		{
 			// 스페큘러맵 바인딩. (슬롯을 나누어 텍스쳐는 0에 스페큘러는 1로 지정한다)
-			bindablePtrs.push_back(std::make_unique<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str()), 1));
+			bindablePtrs.push_back(std::make_shared<Bind::Texture>(gfx, Surface::FromFile(base + texFileName.C_Str()), 1));
 			hasSpecularMap = true;
 		}
 		else
@@ -329,9 +318,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	}
 
 	//위에서 준비한 정점,인덱스버퍼를 삽입
-	bindablePtrs.push_back(std::make_unique<Bind::VertexBuffer>(gfx, vbuf));
+	bindablePtrs.push_back(std::make_shared<Bind::VertexBuffer>(gfx, vbuf));
 
-	bindablePtrs.push_back(std::make_unique<Bind::IndexBuffer>(gfx, indices));
+	bindablePtrs.push_back(std::make_shared<Bind::IndexBuffer>(gfx, indices));
 
 	//정점쉐이더를 불러온다 그후 삽입.
 	auto pvs = std::make_unique<Bind::VertexShader>(gfx, L"PhongVS.cso");
@@ -339,14 +328,14 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	bindablePtrs.push_back(std::move(pvs));
 
 	//정점버퍼로부터 입력레이아웃을 삽입한다.
-	bindablePtrs.push_back(std::make_unique<Bind::InputLayout>(gfx, vbuf.GetLayout().GetD3DLayout(), pvsbc));
+	bindablePtrs.push_back(std::make_shared<Bind::InputLayout>(gfx, vbuf.GetLayout().GetD3DLayout(), pvsbc));
 
 	//스페큘러 맵이잇을경우 해당하는 쉐이더를 바인딩한다.
 	if(hasSpecularMap)
-		bindablePtrs.push_back(std::make_unique<Bind::PixelShader>(gfx, L"PhongPSSpecMap.cso"));
+		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, L"PhongPSSpecMap.cso"));
 	else
 	{
-		bindablePtrs.push_back(std::make_unique<Bind::PixelShader>(gfx, L"PhongPS.cso"));
+		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, L"PhongPS.cso"));
 
 		//픽쉘세이더 상수버퍼에 전달하기위한 구조체
 		struct PSMaterialConstant
@@ -358,7 +347,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		} pmc;
 		pmc.specularPower = shininess;
 		//해당 상수버퍼를 픽쉘세이더 슬롯1에 지정후 해당 바인더블 객체를 컨테이너에 삽입
-		bindablePtrs.push_back(std::make_unique<Bind::PixelConstantBuffer<PSMaterialConstant>>(gfx, pmc, 1u));
+		bindablePtrs.push_back(std::make_shared<Bind::PixelConstantBuffer<PSMaterialConstant>>(gfx, pmc, 1u));
 	}
 	
 	// 이모든 과정을 거치면 해당 3d 오브젝트를 파싱하여 가공완료되었다.

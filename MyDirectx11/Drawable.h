@@ -1,6 +1,7 @@
 #pragma once
 #include "Graphics.h"
 #include "ConditionalNoexcept.h"
+#include <memory>
 
 namespace Bind
 {
@@ -9,14 +10,11 @@ namespace Bind
 }
 class Drawable
 {
-	template<class T>
-	friend class DrawableBase;
 public:
 	Drawable() = default;
 	Drawable(const Drawable&) = delete;
 	virtual DirectX::XMMATRIX GetTransformXM() const noexcept = 0;
 	void Draw(Graphics& gfx) const noxnd;
-	virtual void Update(float dt) noexcept {};
 	virtual ~Drawable() = default;
 protected:
 	//Bindable 객체를 조회하기위한 템플릿
@@ -30,13 +28,9 @@ protected:
 		}
 		return nullptr;
 	}
-	void AddBind(std::unique_ptr<Bind::Bindable> bind)noxnd;
-	void AddIndexBuffer(std::unique_ptr<Bind::IndexBuffer> ibuf) noxnd;
-	
-private:
-	virtual const std::vector<std::unique_ptr<Bind::Bindable>>& GetStaticBinds() const noxnd = 0;
+	void AddBind(std::shared_ptr<Bind::Bindable> bind)noxnd;
 private:
 	const Bind::IndexBuffer* pIndexBuffer = nullptr;
-	std::vector<std::unique_ptr<Bind::Bindable>> binds;
+	std::vector<std::shared_ptr<Bind::Bindable>> binds;
 };
 

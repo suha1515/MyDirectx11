@@ -8,43 +8,32 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 	using namespace Bind;
 	namespace dx = DirectX;
 
-	if (!IsStaticInitialized())
-	{
 		struct Vertex
 		{
 			dx::XMFLOAT3 pos;
 		};
 		auto model = Sphere::Make < Vertex>();
 		model.Transform(dx::XMMatrixScaling(radius, radius, radius));
-		AddBind(std::make_unique < VertexBuffer>(gfx, model.vertices));
-		AddIndexBuffer(std::make_unique<IndexBuffer>(gfx, model.indices));
+		AddBind(std::make_shared < VertexBuffer>(gfx, model.vertices));
+		AddBind(std::make_shared<IndexBuffer>(gfx, model.indices));
 
-		auto pvs = std::make_unique < VertexShader>(gfx, L"SolidVS.cso");
+		auto pvs = std::make_shared < VertexShader>(gfx, L"SolidVS.cso");
 		auto pvsbc = pvs->GetBytecode();
-		AddStaticBind(std::move(pvs));
+		AddBind(std::move(pvs));
 
-		AddStaticBind(std::make_unique<PixelShader>(gfx, L"SolidPs.cso"));
+		AddBind(std::make_shared<PixelShader>(gfx, L"SolidPs.cso"));
 
 		struct PSColorConstant
 		{
 			dx::XMFLOAT3 color = { 1.0f,1.0f,1.0f };
 			float padding;
 		} colorConst;
-		AddStaticBind(std::make_unique<PixelConstantBuffer<PSColorConstant>>(gfx, colorConst));
+		AddBind(std::make_shared<PixelConstantBuffer<PSColorConstant>>(gfx, colorConst));
 
-		AddStaticBind(std::make_unique<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+		AddBind(std::make_shared<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
-	}
-	else
-		SetIndexFromStatic();
-
-	AddBind(std::make_unique<TransformCbuf>(gfx, *this));
+	AddBind(std::make_shared<TransformCbuf>(gfx, *this));
 }
-
-void SolidSphere::Update(float dt) noexcept
-{
-}
-
 void SolidSphere::SetPos(DirectX::XMFLOAT3 pos) noexcept
 {
 	this->pos = pos;

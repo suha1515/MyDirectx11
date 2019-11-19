@@ -1,12 +1,11 @@
 #pragma once
-#include "DrawableBase.h"
+#include "Drawable.h"
 //구체 클래스
 
-class SolidSphere : public DrawableBase<SolidSphere>
+class SolidSphere : public Drawable
 {
 public:
 	SolidSphere(Graphics& gfx, float radius);
-	void Update(float dt) noexcept override;
 	void SetPos(DirectX::XMFLOAT3 pos) noexcept;
 	DirectX::XMMATRIX GetTransformXM() const noexcept override;
 private:
