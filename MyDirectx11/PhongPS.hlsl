@@ -27,12 +27,12 @@ float4 main(float3 worldPos : POSITION, float3 n : NORMAL,float2 tc : Texcoord) 
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
 	const float3 vToL = lightPos - worldPos;
 	//정점부터 광원까지의 거리
-    const float distToL = length(vToL);
+    const float  distToL = length(vToL);
 	//정점부터 광원까지의 방향벡터
     const float3 dirToL = vToL / distToL;
 	//***점광원***//
     // 빛 감쇄치 정하기
-    const float att = 1.0f / (attConst + attLin * distToL + attQuad * (distToL * distToL));
+    const float  att = 1.0f / (attConst + attLin * distToL + attQuad * (distToL * distToL));
 	// 빛 강도
     const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, n));
     //************//

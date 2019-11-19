@@ -20,6 +20,8 @@ namespace Bind
 	public:
 		// Codex클래스가 다양한 바인더블 객체를 저장해야하므로 각 바인더 오브젝트들은
 		//  서로 다른 개수의 생성자를 가지고있다 그것을 대비하여 파라메터 팩으로 생성자를 구성한다.
+
+		//모든 바인딩 객체들은 Resolve를 하기위한 함수를 만들어야한다.
 		template<class T,typename ... Params>
 		static std::shared_ptr<Bindable> Resolve(Graphics& gfx,Params&&...p) noxnd
 		{

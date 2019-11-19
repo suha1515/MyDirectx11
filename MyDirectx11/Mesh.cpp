@@ -243,6 +243,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 {
 	//aiMesh는 말그대로 여러정점과 인덱스로 이루어진 기하구조이다.
 	namespace dx = DirectX;
+	using namespace Bind;
 	using Dvtx::VertexLayout;
 
 	//동적 레이아웃을 지정한다 (위치,노멀)
@@ -285,7 +286,10 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		indices.push_back(face.mIndices[2]);
 	}
 	//바인드가능한 객체들을 담을 벡터 컨테이너
-	std::vector<std::shared_ptr<Bind::Bindable>> bindablePtrs;
+	std::vector<std::shared_ptr<Bindable>> bindablePtrs;
+
+	using namespace std::string_literals;
+	const auto base = "Models\\nano_textured\\"s;
 
 	//스페큘러 맵이 있는지 확인한다.
 	bool hasSpecularMap = false;
@@ -293,38 +297,38 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	if (mesh.mMaterialIndex >= 0)
 	{
 		auto& material = *pMaterial[mesh.mMaterialIndex];
-		using namespace std::string_literals;
-		const auto base = "Models\\nano_textured\\"s;
+
 		aiString texFileName;
 		// 머터리얼의 텍스쳐이름을 가져온다
 		material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
 		// 해당 텍스쳐이름을 기반으로 텍스쳐리소스를 바인딩한다.
-		bindablePtrs.push_back(std::make_shared<Bind::Texture>(gfx,base + texFileName.C_Str()));
-
+		bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str()));
 		// 머터리얼의 스페큘러 맵을 가져온다.
 		// GetTexutre 의 리턴값을 비교하여 해당 머터리얼이 스페큘러 맵이 있는지 검사한다. 있을경우만 바인딩 (일부 물체는 스페큘러가 없을 수 있다)
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
 		{
 			// 스페큘러맵 바인딩. (슬롯을 나누어 텍스쳐는 0에 스페큘러는 1로 지정한다)
-			bindablePtrs.push_back(std::make_shared<Bind::Texture>(gfx, base + texFileName.C_Str(), 1));
+			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str(), 1));
 			hasSpecularMap = true;
 		}
 		else
 			material.Get(AI_MATKEY_SHININESS, shininess);	//매개변수는 3개를받지만 매크로가 2개로되어있다..
 		
 		// 샘플러 바인딩.
-		bindablePtrs.push_back(std::make_unique<Bind::Sampler>(gfx));
+		bindablePtrs.push_back(Sampler::Resolve(gfx));
 
 	}
 
-	//위에서 준비한 정점,인덱스버퍼를 삽입
-	bindablePtrs.push_back(std::make_shared<Bind::VertexBuffer>(gfx, vbuf));
+	//정점,인덱스 버퍼 UID를 위한 경로 + 메쉬이름
+	auto meshTag = base + "%" + mesh.mName.C_Str();
+	//위에서 준비한 정점,인덱스버퍼를 삽입,태그도 같이
+	bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
 
-	bindablePtrs.push_back(std::make_shared<Bind::IndexBuffer>(gfx, indices));
+	bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
 
 	//정점쉐이더를 불러온다 그후 삽입.
-	auto pvs = std::make_unique<Bind::VertexShader>(gfx, "PhongVS.cso");
-	auto pvsbc = pvs->GetBytecode();
+	auto pvs = VertexShader::Resolve(gfx, "PhongVS.cso");
+	auto pvsbc = static_cast<VertexShader&>(*pvs).GetBytecode();
 	bindablePtrs.push_back(std::move(pvs));
 
 	//정점버퍼로부터 입력레이아웃을 삽입한다.
@@ -347,7 +351,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		} pmc;
 		pmc.specularPower = shininess;
 		//해당 상수버퍼를 픽쉘세이더 슬롯1에 지정후 해당 바인더블 객체를 컨테이너에 삽입
-		bindablePtrs.push_back(std::make_shared<Bind::PixelConstantBuffer<PSMaterialConstant>>(gfx, pmc, 1u));
+		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstant>::Resolve(gfx, pmc, 1u));
 	}
 	
 	// 이모든 과정을 거치면 해당 3d 오브젝트를 파싱하여 가공완료되었다.
