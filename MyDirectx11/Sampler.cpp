@@ -1,5 +1,6 @@
 #include "Sampler.h"
 #include "GraphicsThrowMacros.h"
+#include "BindableCodex.h"
 namespace Bind
 {
 	Sampler::Sampler(Graphics& gfx)
@@ -25,5 +26,17 @@ namespace Bind
 	{
 		GetContext(gfx)->PSSetSamplers(0, 1, pSampler.GetAddressOf());
 		//1번째 매개변수는 슬롯으로 레지스터에 대응된다 이값은 쉐이더에서 접근가능한 레지스터이다.
+	}
+	std::shared_ptr<Bindable> Sampler::Resolve(Graphics&   gfx)
+	{
+		return Codex::Resolve<Sampler>(gfx);
+	}
+	std::string Sampler::GenerateUID()
+	{
+		return typeid(Sampler).name();
+	}
+	std::string Sampler::GetUID() const noexcept
+	{
+		return GenerateUID();
 	}
 }

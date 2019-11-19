@@ -31,17 +31,12 @@ namespace Bind
 	}
 	std::shared_ptr<Bindable> VertexShader::Resolve(Graphics& gfx, const std::string& path)
 	{
-		auto bind = Codex::Resolve(GenerateUID(path));
-		if (!bind)
-		{
-			bind = std::make_shared<VertexShader>(gfx, path);
-			Codex::Store(bind);
-		}
-		return bind;
+		return Codex::Resolve<VertexShader>(gfx, path);
 	}
 	// 정점쉐이더의 경로는 유일한 경로이므로 UID로 (유니크 아이디)사용한다.
 	std::string VertexShader::GenerateUID(const std::string& path)
 	{
+		using namespace std::string_literals;
 		return typeid(VertexShader).name() + "#"s + path;
 	}
 	std::string VertexShader::GetUID() const noexcept

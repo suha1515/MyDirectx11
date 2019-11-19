@@ -17,28 +17,28 @@ namespace Bind
 	class Codex
 	{
 	public:
-		//string key를 넘겨 바인더블 객체를 가져온다. 없을시 비어있는 shared_ptr반환
-		static std::shared_ptr<Bindable> Resolve(const std::string& key) noxnd
+		// Codex클래스가 다양한 바인더블 객체를 저장해야하므로 각 바인더 오브젝트들은
+		//  서로 다른 개수의 생성자를 가지고있다 그것을 대비하여 파라메터 팩으로 생성자를 구성한다.
+		template<class T,typename ... Params>
+		static std::shared_ptr<Bindable> Resolve(Graphics& gfx,Params&&...p) noxnd
 		{
-			return Get().Resolve_(key);
-		}
-		//바인더블 객체를 저장한다. 바인더블 객체는 GetUID로 ID값을 반환하는 메서드가 있다.
-		static void Store(std::shared_ptr<Bindable>bind)
-		{
-			Get().Store_(std::move(bind));
+			return Get().Resolve_<T>(gfx,std::forward<Params>(p)...);
 		}
 	private:
-		std::shared_ptr<Bindable> Resolve_(const std::string& key) const noxnd
+		template<class T,typename ... Params>
+		std::shared_ptr<Bindable> Resolve_(Graphics& gfx,Params&&...p)  noxnd
 		{
-			auto i = binds.find(key);
+			const auto key = T::GenerateUID(std::forward<Params>(p)...);
+			const auto i = binds.find(key);
+			//찾는 바인더블 오브젝트가 없다면 새로 만든다.
 			if (i == binds.end())
-				return {};
+			{
+				auto bind = std::make_shared <T>(gfx, std::forward<Params>(p)...);
+				binds[key] = bind;
+				return bind;
+			}
 			else
 				return i->second;
-		}
-		void Store_(std::shared_ptr<Bindable>bind)
-		{
-			binds[bind->GetUID()] = std::move(bind);
 		}
 		static Codex& Get()
 		{
