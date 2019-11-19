@@ -34,18 +34,18 @@ namespace Bind
 	{
 		return count;
 	}
-	std::shared_ptr<Bindable> IndexBuffer::Resolve(Graphics& gfx, const std::string& tag, const std::vector<unsigned short>& indices)
+	std::shared_ptr<IndexBuffer> IndexBuffer::Resolve(Graphics& gfx, const std::string& tag, const std::vector<unsigned short>& indices)
 	{
 		return Codex::Resolve<IndexBuffer>(gfx, tag, indices);
 	}
 	std::string IndexBuffer::GetUID() const noexcept
 	{
-		//인덱스 버퍼또한 정점버퍼처럼 UID는 사용자정의 태그로 구분짓는다.
-		using namespace std::string_literals;
-		return typeid(IndexBuffer).name() + "#"s + tag;
+		return GenerateUID_(tag);
 	}
 	std::string IndexBuffer::GenerateUID_(const std::string& tag)
 	{
-		return GenerateUID_(tag);
+		//인덱스 버퍼또한 정점버퍼처럼 UID는 사용자정의 태그로 구분짓는다.
+		using namespace std::string_literals;
+		return typeid(IndexBuffer).name() + "#"s + tag;
 	}
 }

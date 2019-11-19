@@ -12,7 +12,7 @@ namespace Bind
 		//정점버퍼의 경우 Codex에서 구분할 UID 유니크 아이디는 사용자 태그를 통해 비교한다.
 		VertexBuffer(Graphics& gfx,const std::string& tag, const Dvtx::VertexBuffer& vbuf);
 		void Bind(Graphics& gfx)noexcept override;
-		static std::shared_ptr<Bindable> Resolve(Graphics& gfx, const std::string& tag, const Dvtx::VertexBuffer& vbuf);
+		static std::shared_ptr<VertexBuffer> Resolve(Graphics& gfx, const std::string& tag, const Dvtx::VertexBuffer& vbuf);
 		
 		template<typename... Ignore>
 		static std::string GenerateUID(const std::string& tag, Ignore&&...ignore)

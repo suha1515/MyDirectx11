@@ -27,7 +27,7 @@ namespace Bind
 		GetContext(gfx)->PSSetSamplers(0, 1, pSampler.GetAddressOf());
 		//1번째 매개변수는 슬롯으로 레지스터에 대응된다 이값은 쉐이더에서 접근가능한 레지스터이다.
 	}
-	std::shared_ptr<Bindable> Sampler::Resolve(Graphics&   gfx)
+	std::shared_ptr<Sampler> Sampler::Resolve(Graphics&   gfx)
 	{
 		return Codex::Resolve<Sampler>(gfx);
 	}

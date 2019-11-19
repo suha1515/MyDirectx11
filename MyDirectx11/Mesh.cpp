@@ -328,7 +328,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 
 	//정점쉐이더를 불러온다 그후 삽입.
 	auto pvs = VertexShader::Resolve(gfx, "PhongVS.cso");
-	auto pvsbc = static_cast<VertexShader&>(*pvs).GetBytecode();
+	auto pvsbc = pvs->GetBytecode();
 	bindablePtrs.push_back(std::move(pvs));
 
 	//정점버퍼로부터 입력레이아웃을 삽입한다.

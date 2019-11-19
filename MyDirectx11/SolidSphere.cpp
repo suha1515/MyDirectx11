@@ -15,22 +15,22 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 	AddBind(std::make_shared < VertexBuffer>(gfx, model.vertices));
 	AddBind(std::make_shared<IndexBuffer>(gfx, model.indices));
 
-	auto pvs = std::make_shared < VertexShader>(gfx, "SolidVS.cso");
+	auto pvs = VertexShader::Resolve(gfx, "SolidVS.cso");
 	auto pvsbc = pvs->GetBytecode();
 	AddBind(std::move(pvs));
 
-	AddBind(std::make_shared<PixelShader>(gfx, "SolidPs.cso"));
+	AddBind(PixelShader::Resolve(gfx, "SolidPs.cso"));
 
-	AddBind(std::make_shared<InputLayout>(gfx, model.vertices.GetLayout(), pvsbc));
+	AddBind(InputLayout::Resolve(gfx, model.vertices.GetLayout(), pvsbc));
 
 	struct PSColorConstant
 	{
 		dx::XMFLOAT3 color = { 1.0f,1.0f,1.0f };
 		float padding;
 	} colorConst;
-	AddBind(std::make_shared<PixelConstantBuffer<PSColorConstant>>(gfx, colorConst));
+	AddBind(PixelConstantBuffer<PSColorConstant>::Resolve(gfx, colorConst));
 
-	AddBind(std::make_shared<Topology>(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+	AddBind(Topology::Resolve(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
 	AddBind(std::make_shared<TransformCbuf>(gfx, *this));
 }
