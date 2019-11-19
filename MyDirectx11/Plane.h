@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include <vector>
 #include <array>
 #include "IndexedTriangleList.h"
@@ -8,8 +9,7 @@
 class Plane
 {
 public:
-	template<class V>
-	static IndexedTriangleList<V> MakeTesselated(int divisions_x, int divisions_y)
+	static IndexedTriangleList MakeTesselated(Dvtx::VertexLayout layout ,int divisions_x, int divisions_y)
 	{
 		namespace dx = DirectX;
 		assert(divisions_x >= 1);
@@ -19,7 +19,8 @@ public:
 		constexpr float height = 2.0f;
 		const int nVertices_x = divisions_x + 1;
 		const int nVertices_y = divisions_y + 1;
-		std::vector<V> vertices(nVertices_x * nVertices_y);
+
+		Dvtx::VertexBuffer vb{ std::move(layout) };
 
 		{
 			const float side_x = width / 2.0f;
@@ -33,11 +34,14 @@ public:
 				const float y_pos = float(y) * divisionSize_y;
 				for (int x = 0; x < nVertices_x; x++, i++)
 				{
+					dx::XMFLOAT3 calculatedPos;
 					const auto v = dx::XMVectorAdd(
 						bottomLeft,
 						dx::XMVectorSet(float(x) * divisionSize_x, y_pos, 0.0f, 0.0f)
 					);
-					dx::XMStoreFloat3(&vertices[i].pos, v);
+					dx::XMStoreFloat3(&calculatedPos, v);
+					dx::XMFLOAT2 temptex;
+					vb.EmplaceBack(calculatedPos, temptex);
 				}
 			}
 		}
@@ -63,11 +67,13 @@ public:
 				}
 			}
 		}
-		return{ std::move(vertices),std::move(indices) };
+		return{ std::move(vb),std::move(indices) };
 	}
-	template<class V>
-	static IndexedTriangleList<V> Make()
+	static IndexedTriangleList  Make(std::optional<Dvtx::VertexLayout> layout = std::nullopt)
 	{
-		return MakeTesselated<V>(1, 1);
+		using Element = Dvtx::VertexLayout::ElementType;
+		if (!layout)
+			layout = Dvtx::VertexLayout{}.Append(Element::Position3D).Append(Element::Texture2D);
+		return MakeTesselated(std::move(*layout),1,1);
 	}
 };
