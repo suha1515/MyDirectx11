@@ -28,7 +28,7 @@ SolidSphere::SolidSphere(Graphics& gfx, float radius)
 		dx::XMFLOAT3 color = { 1.0f,1.0f,1.0f };
 		float padding;
 	} colorConst;
-	AddBind(PixelConstantBuffer<PSColorConstant>::Resolve(gfx, colorConst));
+	AddBind(PixelConstantBuffer<PSColorConstant>::Resolve(gfx, colorConst,1u));
 
 	AddBind(Topology::Resolve(gfx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 
