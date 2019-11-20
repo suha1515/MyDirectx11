@@ -28,7 +28,10 @@ float4 main(float3 worldPos : Position, float3 n : Normal, float2 tc : Texcoord)
     if(normalMapEnabled)
     {
         //매핑한 노멀값을 n에 대입한다.
-        n = nmap.Sample(splr, tc).xyz;
+        const float3 normalSample = nmap.Sample(splr, tc).xyz;
+        n.x =  normalSample.x * 2.0f - 1.0f;
+        n.y = -normalSample.y * 2.0f - 1.0f;
+        n.z = -normalSample.z;
     }
    //물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
     const float3 vToL = lightPos - worldPos;
