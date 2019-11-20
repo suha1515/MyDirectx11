@@ -14,10 +14,9 @@ namespace dx = DirectX;
 GDIPlusManager gdipm;
 
 App::App()
-	:wnd(1280, 720, "My Window"), light(wnd.Gfx())
-	, plane(wnd.Gfx(), 3.0f)
+	:wnd(1280, 720, "My Window"),
+	light(wnd.Gfx())
 {
-	plane.SetPos({ 1.0f,17.0f,-1.0f });
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
 }
 
@@ -32,13 +31,12 @@ void App::DoFrame()
 	light.Bind(wnd.Gfx(), cam.GetMatrix());
 
 	//모델 그리기
-	nano.Draw(wnd.Gfx());
-	nano2.Draw(wnd.Gfx());
+	wall.Draw(wnd.Gfx());
+	//nano.Draw(wnd.Gfx());
 
 	//광원의 위치를 그린다.
 	light.Draw(wnd.Gfx());
 	//테스트 플레인
-	plane.Draw(wnd.Gfx());
 	while (const auto e = wnd.kbd.ReadKey())
 	{
 		if (!e->IsPress())
@@ -105,9 +103,9 @@ void App::DoFrame()
 	cam.SpwanControlWindow();
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
-	nano.ShowWindow("Model 1");
-	nano2.ShowWindow("Model 2");
-	plane.SpawnControlWindow(wnd.Gfx());
+	wall.ShowWindow("Wall");
+	//nano.ShowWindow("Model 1");
+	
 
 	//present
 	wnd.Gfx().EndFrame();

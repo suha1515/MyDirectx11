@@ -203,8 +203,9 @@ Model::Model(Graphics& gfx, const std::string fileName)
 	const auto pScene = imp.ReadFile(fileName.c_str(),
 		aiProcess_Triangulate |
 		aiProcess_JoinIdenticalVertices|
-		aiProcess_ConvertToLeftHanded|
-		aiProcess_GenNormals
+		aiProcess_ConvertToLeftHanded|	//왼손좌표계로
+		aiProcess_GenNormals|			//노멀생성
+		aiProcess_CalcTangentSpace		//탄젠트 계산
 	);
 
 	if (pScene == nullptr)
@@ -251,6 +252,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		VertexLayout{}
 		.Append(VertexLayout::Position3D)
 		.Append(VertexLayout::Normal)
+		.Append(VertexLayout::Tangent)
+		.Append(VertexLayout::Bitangent)
 		.Append(VertexLayout::Texture2D)		//텍스쳐좌표값을위해 동적레이아웃 추가설정.
 	));
 
@@ -265,6 +268,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		vbuf.EmplaceBack(
 			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mVertices[i]),
 			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
+			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mTangents[i]),		//탄젠트
+			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mBitangents[i]),		//바이탄젠트
 			//assimp에서 텍스처좌표가 이중배열로이루어졌는데 텍스쳐좌표를위해 8개의 채널을 가지고 있다.
 			//아래는 첫번째 채널이다.두번재는 정점으로써 정점은 여러 텍스를 따로 저장할수있다.
 			*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
@@ -289,7 +294,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	std::vector<std::shared_ptr<Bindable>> bindablePtrs;
 
 	using namespace std::string_literals;
-	const auto base = "Models\\nano_textured\\"s;
+	const auto base = "Models\\brick_wall\\"s;
 
 	//스페큘러 맵이 있는지 확인한다.
 	bool hasSpecularMap = false;
@@ -314,6 +319,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 		else
 			material.Get(AI_MATKEY_SHININESS, shininess);	//매개변수는 3개를받지만 매크로가 2개로되어있다..
 		
+		material.GetTexture(aiTextureType_NORMALS, 0, &texFileName);
+		bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str(), 2));
+
 		// 샘플러 바인딩.
 		bindablePtrs.push_back(Sampler::Resolve(gfx));
 
@@ -327,7 +335,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
 
 	//정점쉐이더를 불러온다 그후 삽입.
-	auto pvs = VertexShader::Resolve(gfx, "PhongVS.cso");
+	auto pvs = VertexShader::Resolve(gfx, "PhongVSNormalMap.cso");
 	auto pvsbc = pvs->GetBytecode();
 	bindablePtrs.push_back(std::move(pvs));
 
@@ -335,8 +343,17 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	bindablePtrs.push_back(std::make_shared<Bind::InputLayout>(gfx, vbuf.GetLayout(), pvsbc));
 
 	//스페큘러 맵이잇을경우 해당하는 쉐이더를 바인딩한다.
-	if(hasSpecularMap)
-		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, "PhongPSSpecMap.cso"));
+	if (hasSpecularMap)
+	{	
+		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, "PhongPSSpecNormalMap.cso"));
+
+		struct PSMaterialConstant
+		{
+			BOOL normalMapEnabled = TRUE;
+			float padding[3];
+		}pmc;
+		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstant>::Resolve(gfx, pmc, 1u));
+	}
 	else
 	{
 		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, "PhongPS.cso"));
@@ -347,7 +364,8 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 			//DirectX::XMFLOAT3 color = { 0.6f,0.6f,0.8f };
 			float specularIntensity = 0.8f;
 			float specularPower;
-			float padding[2];				//텍스처좌표로 패딩값을 넣는데 원리를 아직 모르겠다.
+			BOOL  normalMapEnabled  = TRUE;
+			float padding[1];				//텍스처좌표로 패딩값을 넣는데 원리를 아직 모르겠다.
 		} pmc;
 		pmc.specularPower = shininess;
 		//해당 상수버퍼를 픽쉘세이더 슬롯1에 지정후 해당 바인더블 객체를 컨테이너에 삽입

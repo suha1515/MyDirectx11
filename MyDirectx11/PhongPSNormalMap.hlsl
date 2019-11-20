@@ -24,21 +24,28 @@ cbuffer TransformCBuf
 };
 
 Texture2D tex;
-Texture2D nmap;
+Texture2D nmap : register(t2);
 
 SamplerState splr;
 
-float4 main(float3 worldPos : Position, float3 n : Normal, float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 worldPos : Position, float3 n : Normal,float3 tan : Tangent,float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
 {
     //노맙맵으로부터 매핑
     if(normalMapEnabled)
     {
-        //매핑한 노멀값을 n에 대입한다.
+        // build the tranform (rotation) into tangent space
+        const float3x3 tanToView = float3x3(
+            normalize(tan),
+            normalize(bitan),
+            normalize(n)
+        );
+        // unpack the normal from map into tangent space        
         const float3 normalSample = nmap.Sample(splr, tc).xyz;
-        n.x =  normalSample.x * 2.0f - 1.0f;
-        n.y = -normalSample.y * 2.0f - 1.0f;
-        n.z = -normalSample.z;
-        n = mul(n, (float3x3) modelView);
+        n.x = normalSample.x * 2.0f - 1.0f;
+        n.y = -normalSample.y * 2.0f + 1.0f;
+        n.z = normalSample.z;
+        // bring normal from tanspace into view space
+        n = mul(n, tanToView);
     }
    //물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
     const float3 vToL = lightPos - worldPos;

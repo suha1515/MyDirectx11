@@ -430,10 +430,13 @@
     <FxCompile Include="TexturedPhongPS.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="PhongPSSpecMap.hlsl">
+    <FxCompile Include="PhongPSNormalMap.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="PhongPSNormalMap.hlsl">
+    <FxCompile Include="PhongVSNormalMap.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PhongPSSpecNormalMap.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
   </ItemGroup>
