@@ -11,17 +11,25 @@ namespace Bind
 
 	void TransformCbuf::Bind(Graphics& gfx) noexcept
 	{
-		//해당 객체의 트랜스폼을 가져와 상수버퍼를 만들고 바인딩한다.
-		const auto modelView = parent.GetTransformXM() * gfx.GetCamera();
-		const Transforms tf = {
-			DirectX::XMMatrixTranspose(modelView),
-			DirectX::XMMatrixTranspose(
-				modelView *
-				gfx.GetProjection()
-			)
-		};
+		UpdateBindImpl(gfx, GetTransforms(gfx));
+	}
+
+	void TransformCbuf::UpdateBindImpl(Graphics& gfx, const Transforms& tf) noexcept
+	{
 		pVcbuf->Update(gfx, tf);
 		pVcbuf->Bind(gfx);
+	}
+
+	TransformCbuf::Transforms TransformCbuf::GetTransforms(Graphics& gfx) noexcept
+	{
+		const auto modelView = parent.GetTransformXM() * gfx.GetCamera();
+		return {
+			DirectX::XMMatrixTranspose(modelView),
+			DirectX::XMMatrixTranspose(
+			modelView *
+			gfx.GetProjection()
+			)
+		};
 	}
 
 	std::unique_ptr<VertexConstantBuffer<TransformCbuf::Transforms>>TransformCbuf::pVcbuf;
