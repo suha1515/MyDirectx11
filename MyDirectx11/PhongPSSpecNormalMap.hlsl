@@ -21,11 +21,9 @@ Texture2D tex;
 Texture2D spec;
 Texture2D nmap;
 
-static const float specularPowerFactor = 100.0f;
-
 SamplerState splr;
 
-float4 main(float3 worldPos : POSITION, float3 n : NORMAL,float3 tan: Tangent, float3 bitan : Bitangent,float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 worldPos : Position, float3 n : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
 {
     if(normalMapEnabled)
     {

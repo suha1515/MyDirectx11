@@ -10,11 +10,11 @@ struct VSOut
     float3 normal : Normal;
     float3 tan : Tangent;
     float3 bitan : Bitangent;
-    float2 tec : Texcoord
+    float2 tc : Texcoord;
     float4 pos : SV_Position;
 };
 
-VSOut main( float3 pos : POSITION,float3 n : Normal,float3 tan : Tangent,float3 bitan : Bitangent,float2 tc : Texcoord )
+VSOut main(float3 pos : Position, float3 n : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord)
 {
     VSOut vso;
     vso.worldPos = (float3) mul(float4(pos, 1.0f), modelView);

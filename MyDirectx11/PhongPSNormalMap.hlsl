@@ -28,7 +28,7 @@ Texture2D nmap : register(t2);
 
 SamplerState splr;
 
-float4 main(float3 worldPos : Position, float3 n : Normal,float3 tan : Tangent,float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 worldPos : Position, float3 n : Normal,float3 tan : Tangent,float3 bitan : Bitangent, float2 tc : TEXcoord) : SV_TARGET
 {
     //노맙맵으로부터 매핑
     if(normalMapEnabled)
@@ -69,6 +69,5 @@ float4 main(float3 worldPos : Position, float3 n : Normal,float3 tan : Tangent,f
     //************//
 
 	// 최종 색 (텍스처 기반 색)
-    //return float4(saturate(diffuse + ambient + specular), 1.0f) * tex.Sample(splr, tc);
     return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specular), 1.0f);
 }

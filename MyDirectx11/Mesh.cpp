@@ -356,7 +356,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const a
 	}
 	else
 	{
-		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, "PhongPS.cso"));
+		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, "PhongPSNormalMap.cso"));
 
 		//픽쉘세이더 상수버퍼에 전달하기위한 구조체
 		struct PSMaterialConstant

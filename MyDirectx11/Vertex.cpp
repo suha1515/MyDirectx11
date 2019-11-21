@@ -130,7 +130,7 @@ namespace Dvtx
 		case Tangent:
 			return GenerateDesc<Tangent>(GetOffset());
 		case Bitangent:
-			return GenerateDesc<Bitangent>(GetOffset());
+			return GenerateDesc<Bitangent>(GetOffset()); 
 		case Float3Color:
 			return GenerateDesc<Float3Color>(GetOffset());
 		case Float4Color:
