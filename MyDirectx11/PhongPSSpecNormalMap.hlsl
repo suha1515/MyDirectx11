@@ -23,7 +23,7 @@ Texture2D nmap;
 
 SamplerState splr;
 
-float4 main(float3 worldPos : Position, float3 n : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 viewPos : Position, float3 n : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
 {
     if(normalMapEnabled)
     {
@@ -43,7 +43,7 @@ float4 main(float3 worldPos : Position, float3 n : Normal, float3 tan : Tangent,
 
 
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
-	const float3 vToL = lightPos - worldPos;
+    const float3 vToL = lightPos - viewPos;
 	//정점부터 광원까지의 거리
     const float distToL = length(vToL);
 	//정점부터 광원까지의 방향벡터
@@ -66,7 +66,7 @@ float4 main(float3 worldPos : Position, float3 n : Normal, float3 tan : Tangent,
     const float3 specularReflectionColor = specularSample.rgb;
     //const float  specularPower = specularSample.a*specularPowerFactor;
     const float specularPower = pow(2.0f, specularSample.a * 13.0f);
-    const float3 specular = att * (diffuseColor * diffuseIntensity) * pow(max(0.0f, dot(normalize(-r), normalize(worldPos))), specularPower);
+    const float3 specular = att * (diffuseColor * diffuseIntensity) * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), specularPower);
 	// 최종 색 (텍스처 기반 색)
     return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specular * specularReflectionColor), 1.0f);
 }

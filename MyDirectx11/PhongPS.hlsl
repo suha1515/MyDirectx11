@@ -22,10 +22,10 @@ Texture2D tex;
 SamplerState splr;
 
 
-float4 main(float3 worldPos : POSITION, float3 n : NORMAL,float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 viewPos : POSITION, float3 n : NORMAL, float2 tc : Texcoord) : SV_TARGET
 {
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
-	const float3 vToL = lightPos - worldPos;
+    const float3 vToL = lightPos - viewPos;
 	//정점부터 광원까지의 거리
     const float  distToL = length(vToL);
 	//정점부터 광원까지의 방향벡터
@@ -42,7 +42,7 @@ float4 main(float3 worldPos : POSITION, float3 n : NORMAL,float2 tc : Texcoord) 
     const float3 w = n * dot(vToL, n);
     const float3 r = w * 2.0f - vToL;
     //시야벡터와 빛반사벡터 사이의 각도를 기반으로 정반사의 강도를 제곱수와 함께 구한다
-    const float3 specular =att* (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(worldPos))), specularPower);
+    const float3 specular = att * (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), specularPower);
     //************//
 
 	// 최종 색 (텍스처 기반 색)
