@@ -75,6 +75,7 @@ public:
 	Model(Graphics& gfx, const std::string fileName);
 	void Draw(Graphics& gfx) const noxnd;
 	void ShowWindow(const char* windowname = nullptr) noexcept;
+	void SetRootTransform(DirectX::FXMMATRIX tf) noexcept;
 	~Model() noexcept;	//소멸자 구성을 하지않으면 전방선언타입으로 유니크 포인터를 만들수 없다는데 왜그럴까..
 private:
 

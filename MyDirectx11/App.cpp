@@ -17,6 +17,8 @@ App::App()
 	:wnd(1280, 720, "My Window"),
 	light(wnd.Gfx())
 {
+	wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
+	tp.SetPos({ 1.5f,0.0f,0.0f });
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
 }
 
@@ -32,6 +34,7 @@ void App::DoFrame()
 
 	//모델 그리기
 	wall.Draw(wnd.Gfx());
+	tp.Draw(wnd.Gfx());
 	//nano.Draw(wnd.Gfx());
 
 	//광원의 위치를 그린다.
@@ -104,6 +107,7 @@ void App::DoFrame()
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
 	wall.ShowWindow("Wall");
+	tp.SpawnControlWindow(wnd.Gfx());
 	//nano.ShowWindow("Model 1");
 	
 
