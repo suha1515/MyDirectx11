@@ -290,7 +290,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 	bool hasAlphaGloss = false;
 	bool hasNormalMap = false;
 	bool hasDiffuseMap = false;
-	float shininess = 35.0f;
+	float shininess = 2.0f;
+	dx::XMFLOAT4 specularColor = { 0.18f,0.18f,0.18f,1.0f };
+	dx::XMFLOAT4 diffuseColor = { 0.45f,0.45f,0.85f,1.0f };
 
 	if (mesh.mMaterialIndex >= 0)
 	{
@@ -304,6 +306,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str()));
 			hasDiffuseMap = true;
 		}
+		else
+			//텍스처가 없다면 머터리얼에서 색깔값을 가져온다.
+			material.Get(AI_MATKEY_COLOR_DIFFUSE, reinterpret_cast<aiColor3D&>(diffuseColor));
 
 		//스페큘러 맵 정보를 가져온다
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
@@ -313,6 +318,9 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 			bindablePtrs.push_back(std::move(tex));
 			hasSpecularMap = true;
 		}
+		else
+			//스페큘러 맵이 없다면.
+			
 		//가져온 스페큘러맵에 알파값이없을경우 기본 값으로
 		if(!hasAlphaGloss)
 			material.Get(AI_MATKEY_SHININESS, shininess);
