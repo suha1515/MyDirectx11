@@ -7,6 +7,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "ConditionalNoexcept.h"
+#include "ConstantBuffer.h"
 
 
 //모델 불러오기 예외처리 클래스
@@ -47,11 +48,22 @@ class Node
 {
 	friend class Model;
 public:
+	struct PSMaterialConstantFullmonte
+	{
+		BOOL  normalMapEnabled = TRUE;
+		BOOL  specularMapEnabled = TRUE;
+		BOOL  hasGlossMap = FALSE;
+		float specularPower = 1.0f;
+		DirectX::XMFLOAT3 specularColor = { 1.0f,1.0f,1.0f };
+		float specularMapWeight = 1.0f;
+	};
+public:
 	Node(int id,const std::string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd;
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd;
 	void SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept;	//트랜스폼을 적용한다.
 	int GetId()const noexcept;
 	void ShowTree(Node*& pSelectedNode) const noexcept;
+	void ControlMesh(Graphics& gfx, PSMaterialConstantFullmonte& c);
 private:
 	void AddChild(std::unique_ptr<Node> pChild) noxnd;
 	// 인덱스를 통해 직접 노드에 접근할수 있다.
@@ -74,7 +86,7 @@ class Model
 public:
 	Model(Graphics& gfx, const std::string fileName);
 	void Draw(Graphics& gfx) const noxnd;
-	void ShowWindow(const char* windowname = nullptr) noexcept;
+	void ShowWindow(Graphics& gfx,const char* windowName = nullptr) noexcept;
 	void SetRootTransform(DirectX::FXMMATRIX tf) noexcept;
 	~Model() noexcept;	//소멸자 구성을 하지않으면 전방선언타입으로 유니크 포인터를 만들수 없다는데 왜그럴까..
 private:

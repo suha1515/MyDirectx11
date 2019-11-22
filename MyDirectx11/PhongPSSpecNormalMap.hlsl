@@ -13,9 +13,11 @@
 cbuffer ObjectCBuf
 {
     bool normalMapEnabled;
+    bool specularMapEnabled;
     bool hasGloss;
     float specularPowerConst;
-    float padding[1];
+    float3 specularColor;
+    float specularMapweight;
 };
 
 Texture2D tex;
@@ -60,18 +62,26 @@ float4 main(float3 viewPos : Position, float3 n : Normal, float3 tan : Tangent, 
     const float3 w = n * dot(vToL, n);
     const float3 r = w * 2.0f - vToL;
     
-    
-    const float4 specularSample = spec.Sample(splr, tc);
-    //수치화된 스페큘러가 아닌. 스페큘러맵에서 강도를 가져온다.
-    const float3 specularReflectionColor = specularSample.rgb;
-    float specularPower;
-    if (hasGloss)
+
+    //시선벡터와 반사벡터사이의 각에 기반하여 정반사 강도를 구한다.
+    float3 specularReflectionColor;
+    //스페큘러 맵에서 승수값을 받기전까진 기본으로 머터리얼값을 사용한다.
+    float specularPower = specularPowerConst;
+    if(specularMapEnabled)
     {
-        specularPower = pow(2.0f, specularSample.a * 13.0f);
+        //수치화된 스페큘러가 아닌. 스페큘러맵에서 강도를 가져온다.
+        const float4 specularSample = spec.Sample(splr, tc);
+        specularReflectionColor = specularSample.rgb * specularMapweight;
+
+        //스페큘러맵의 알파값이 승수값이므로 있는경우 파워값을 받아온다
+        if(hasGloss)
+        {
+            specularPower = pow(2.0f, specularSample.a * 13.0f);
+        }
     }
     else
     {
-        specularPower = specularPowerConst;
+        specularReflectionColor = specularColor;
     }
     const float3 specular = att * (diffuseColor * diffuseIntensity) * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), specularPower);
 	// 최종 색 (텍스처 기반 색)

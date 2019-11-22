@@ -16,7 +16,7 @@ namespace Bind
 
 		// load surface 텍스처 로딩.
 		const auto s = Surface::FromFile(path);
-		hasAlpha = 
+		hasAlpha = s.AlphaLoaded();
 
 		//텍스처 자원을 만든다
 		//텍스처를 만들기위해 텍스처를 설명하는 구조체를 만든다. (버퍼만들기와 같다)

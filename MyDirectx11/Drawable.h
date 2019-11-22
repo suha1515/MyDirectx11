@@ -16,7 +16,6 @@ public:
 	virtual DirectX::XMMATRIX GetTransformXM() const noexcept = 0;
 	void Draw(Graphics& gfx) const noxnd;
 	virtual ~Drawable() = default;
-protected:
 	//Bindable 객체를 조회하기위한 템플릿
 	template<class T>
 	T* QueryBindable() noexcept
@@ -28,6 +27,7 @@ protected:
 		}
 		return nullptr;
 	}
+protected:
 	void AddBind(std::shared_ptr<Bind::Bindable> bind)noxnd;
 private:
 	const Bind::IndexBuffer* pIndexBuffer = nullptr;

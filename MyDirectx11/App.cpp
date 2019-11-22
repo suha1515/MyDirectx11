@@ -106,7 +106,7 @@ void App::DoFrame()
 	cam.SpwanControlWindow();
 	light.SpawnControlWindow();
 	ShowImguiDemoWindow();
-	gobber.ShowWindow("gobber");
+	gobber.ShowWindow(wnd.Gfx(),"gobber");
 	//wall.ShowWindow("Wall");
 	//tp.SpawnControlWindow(wnd.Gfx());
 	//nano.ShowWindow("Model 1");
