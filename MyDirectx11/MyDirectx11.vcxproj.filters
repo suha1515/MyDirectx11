@@ -385,24 +385,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="ColorBlendVS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="ColorBlendPS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="ColorIndexPS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="TextureVS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="TexturePS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="ColorIndexVS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="PhongPS.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
@@ -415,21 +397,6 @@
     <FxCompile Include="SolidPS.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="IndexPhongPS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="BlendedPhongVS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="BlendedPhongPS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="TexturedPhongVS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="TexturedPhongPS.hlsl">
-      <Filter>98.Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="PhongPSNormalMap.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
@@ -440,6 +407,12 @@
       <Filter>98.Shaders</Filter>
     </FxCompile>
     <FxCompile Include="PhongPSNormalMapObject.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PhongPSNotex.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PhongVSNotex.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
   </ItemGroup>

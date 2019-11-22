@@ -244,138 +244,279 @@ Model::~Model() noexcept
 {
 }
 // 오브젝트의 메쉬에 접근하여 정보를 가공한다.
-std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh,const aiMaterial* const* pMaterial)
+std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterial)
 {
 	//aiMesh는 말그대로 여러정점과 인덱스로 이루어진 기하구조이다.
-	namespace dx = DirectX;
+	using namespace std::string_literals;
 	using namespace Bind;
 	using Dvtx::VertexLayout;
 
-	//동적 레이아웃을 지정한다 (위치,노멀)
-	Dvtx::VertexBuffer vbuf(std::move(
-		VertexLayout{}
-		.Append(VertexLayout::Position3D)
-		.Append(VertexLayout::Normal)
-		.Append(VertexLayout::Tangent)
-		.Append(VertexLayout::Bitangent)
-		.Append(VertexLayout::Texture2D)		//텍스쳐좌표값을위해 동적레이아웃 추가설정.
-	));
-
-	// 메쉬는 멤버변수로 매터리얼 배열의 인덱스를 가지고있다.
-	// 인덱스로 메쉬에 대한 머터리얼에 접근할 수 있다.
-	auto& material = *pMaterial[mesh.mMaterialIndex];
-
-	//정점개수만큼 정점버퍼에 삽입한다.
-	//정점버퍼에 동적 레이아웃을 지정하였으므로 해당 레이아웃대로 삽입된다.
-	for (unsigned int i = 0; i < mesh.mNumVertices; i++)
-	{
-		vbuf.EmplaceBack(
-			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mVertices[i]),
-			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
-			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mTangents[i]),		//탄젠트
-			*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mBitangents[i]),		//바이탄젠트
-			//assimp에서 텍스처좌표가 이중배열로이루어졌는데 텍스쳐좌표를위해 8개의 채널을 가지고 있다.
-			//아래는 첫번째 채널이다.두번재는 정점으로써 정점은 여러 텍스를 따로 저장할수있다.
-			*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
-		); 
-	}
-
-	// 메쉬들을 aiProcess_Triangulate 즉 삼각형 구조로 받는다
-	// 모든 인덱스는 면의개수*3 을하면 총인덱스버퍼의 크기를 구할 수 있다.
-	std::vector<unsigned short> indices;
-	indices.reserve(mesh.mNumFaces * 3);
-	
-	//면의 개수만큼 접근하여 각면의 인덱스정보를 버퍼에 삽입한다. 인덱스점이 3개이상이면 예외
-	for (unsigned int i = 0; i < mesh.mNumFaces; i++)
-	{
-		const auto& face = mesh.mFaces[i];
-		assert(face.mNumIndices == 3);
-		indices.push_back(face.mIndices[0]);
-		indices.push_back(face.mIndices[1]);
-		indices.push_back(face.mIndices[2]);
-	}
-	//바인드가능한 객체들을 담을 벡터 컨테이너
 	std::vector<std::shared_ptr<Bindable>> bindablePtrs;
+	const auto base = "Models\\gobber\\"s;
 
-	using namespace std::string_literals;
-	const auto base = "Models\\brick_wall\\"s;
-
-	//스페큘러 맵이 있는지 확인한다.
 	bool hasSpecularMap = false;
+	bool hasNormalMap = false;
+	bool hasDiffuseMap = false;
 	float shininess = 35.0f;
+
 	if (mesh.mMaterialIndex >= 0)
 	{
 		auto& material = *pMaterial[mesh.mMaterialIndex];
-
 		aiString texFileName;
-		// 머터리얼의 텍스쳐이름을 가져온다
-		material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName);
-		// 해당 텍스쳐이름을 기반으로 텍스쳐리소스를 바인딩한다.
-		bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str()));
-		// 머터리얼의 스페큘러 맵을 가져온다.
-		// GetTexutre 의 리턴값을 비교하여 해당 머터리얼이 스페큘러 맵이 있는지 검사한다. 있을경우만 바인딩 (일부 물체는 스페큘러가 없을 수 있다)
+
+		//머터리얼에서 Diffuse 텍스처 정보를 가져온다
+		if (material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName) == aiReturn_SUCCESS)
+		{
+			//해당 텍스쳐 푸쉬
+			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str()));
+			hasDiffuseMap = true;
+		}
+
+		//스페큘러 맵 정보를 가져온다
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			// 스페큘러맵 바인딩. (슬롯을 나누어 텍스쳐는 0에 스페큘러는 1로 지정한다)
+			//해당 스페큘러 경로를 통해 정보 푸쉬
 			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str(), 1));
 			hasSpecularMap = true;
 		}
+		//없을경우 반짝임 정보만 넣음
 		else
-			material.Get(AI_MATKEY_SHININESS, shininess);	//매개변수는 3개를받지만 매크로가 2개로되어있다..
-		
-		material.GetTexture(aiTextureType_NORMALS, 0, &texFileName);
-		bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str(), 2));
+			material.Get(AI_MATKEY_SHININESS, shininess);
 
-		// 샘플러 바인딩.
-		bindablePtrs.push_back(Sampler::Resolve(gfx));
-
+		//노멀 맵 정보를 가져온다.
+		if (material.GetTexture(aiTextureType_NORMALS, 0, &texFileName) == aiReturn_SUCCESS)
+		{
+			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str(), 2));
+			hasNormalMap = true;
+		}
+		//3중 하나라도 있으면 샘플러 추가.
+		if (hasDiffuseMap || hasSpecularMap || hasNormalMap)
+			bindablePtrs.push_back(Bind::Sampler::Resolve(gfx));
 	}
+	//메쉬 태그
+	const auto meshTag = base + "%" + mesh.mName.C_Str();
+	//스케일
+	const float scale = 6.0f;
 
-	//정점,인덱스 버퍼 UID를 위한 경로 + 메쉬이름
-	auto meshTag = base + "%" + mesh.mName.C_Str();
-	//위에서 준비한 정점,인덱스버퍼를 삽입,태그도 같이
-	bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
+	if (hasDiffuseMap && hasNormalMap && hasSpecularMap)
+	{
+		//동적 레이아웃을 지정한다 (위치,노멀)
+		Dvtx::VertexBuffer vbuf(std::move(
+			VertexLayout{}
+			.Append(VertexLayout::Position3D)
+			.Append(VertexLayout::Normal)
+			.Append(VertexLayout::Tangent)
+			.Append(VertexLayout::Bitangent)
+			.Append(VertexLayout::Texture2D)		//텍스쳐좌표값을위해 동적레이아웃 추가설정.
+		));
+		//정점개수만큼 정점버퍼에 삽입한다.
+		//정점버퍼에 동적 레이아웃을 지정하였으므로 해당 레이아웃대로 삽입된다.
+		for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+		{
+			vbuf.EmplaceBack(
+				dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
+				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
+				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mTangents[i]),		//탄젠트
+				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mBitangents[i]),		//바이탄젠트
+				//assimp에서 텍스처좌표가 이중배열로이루어졌는데 텍스쳐좌표를위해 8개의 채널을 가지고 있다.
+				//아래는 첫번째 채널이다.두번재는 정점으로써 정점은 여러 텍스를 따로 저장할수있다.
+				*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
+			);
+		}
+		// 메쉬들을 aiProcess_Triangulate 즉 삼각형 구조로 받는다
+		// 모든 인덱스는 면의개수*3 을하면 총인덱스버퍼의 크기를 구할 수 있다.
+		std::vector<unsigned short> indices;
+		indices.reserve(mesh.mNumFaces * 3);
 
-	bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
+		//면의 개수만큼 접근하여 각면의 인덱스정보를 버퍼에 삽입한다. 인덱스점이 3개이상이면 예외
+		for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+		{
+			const auto& face = mesh.mFaces[i];
+			assert(face.mNumIndices == 3);
+			indices.push_back(face.mIndices[0]);
+			indices.push_back(face.mIndices[1]);
+			indices.push_back(face.mIndices[2]);
+		}
+		//정점버퍼 추가
+		bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
+		//색인버퍼 추가
+		bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
 
-	//정점쉐이더를 불러온다 그후 삽입.
-	auto pvs = VertexShader::Resolve(gfx, "PhongVSNormalMap.cso");
-	auto pvsbc = pvs->GetBytecode();
-	bindablePtrs.push_back(std::move(pvs));
+		auto pvs = VertexShader::Resolve(gfx, "PhongVSNormalMap.cso");
+		auto pvsbc = pvs->GetBytecode();
+		bindablePtrs.push_back(std::move(pvs));
 
-	//정점버퍼로부터 입력레이아웃을 삽입한다.
-	bindablePtrs.push_back(std::make_shared<Bind::InputLayout>(gfx, vbuf.GetLayout(), pvsbc));
+		bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSSpecNormalMap.cso"));
+		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
-	//스페큘러 맵이잇을경우 해당하는 쉐이더를 바인딩한다.
-	if (hasSpecularMap)
-	{	
-		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, "PhongPSSpecNormalMap.cso"));
-
-		struct PSMaterialConstant
+		struct PSMaterialConstantFullmonte
 		{
 			BOOL normalMapEnabled = TRUE;
 			float padding[3];
 		}pmc;
-		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstant>::Resolve(gfx, pmc, 1u));
+		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantFullmonte>::Resolve(gfx, pmc, 1u));
 	}
-	else
+	//디퓨즈,노멀맵만 있는경우
+	else if (hasDiffuseMap && hasNormalMap)
 	{
-		bindablePtrs.push_back(std::make_shared<Bind::PixelShader>(gfx, "PhongPSNormalMap.cso"));
+		Dvtx::VertexBuffer vbuf(std::move(
+			VertexLayout{}
+			.Append(VertexLayout::Position3D)
+			.Append(VertexLayout::Normal)
+			.Append(VertexLayout::Tangent)
+			.Append(VertexLayout::Bitangent)
+			.Append(VertexLayout::Texture2D)
+		));
 
-		//픽쉘세이더 상수버퍼에 전달하기위한 구조체
-		struct PSMaterialConstant
+		for (unsigned int i = 0; i < mesh.mNumVertices; i++)
 		{
-			//DirectX::XMFLOAT3 color = { 0.6f,0.6f,0.8f };
-			float specularIntensity = 0.8f;
+			vbuf.EmplaceBack(
+				dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
+				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
+				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mTangents[i]),
+				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mBitangents[i]),
+				*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
+			);
+		}
+
+		std::vector<unsigned short> indices;
+		indices.reserve(mesh.mNumFaces * 3);
+		for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+		{
+			const auto& face = mesh.mFaces[i];
+			assert(face.mNumIndices == 3);
+			indices.push_back(face.mIndices[0]);
+			indices.push_back(face.mIndices[1]);
+			indices.push_back(face.mIndices[2]);
+		}
+		bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
+
+		bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
+
+		auto pvs = VertexShader::Resolve(gfx, "PhongVSNormalMap.cso");
+		auto pvsbc = pvs->GetBytecode();
+		bindablePtrs.push_back(std::move(pvs));
+
+		bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSNormalMap.cso"));
+
+		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
+
+		//스페큘러가 없으니 스페큘러 강도와 승수등을 정해줘야한다.
+		struct PSMaterialConstantDiffnorm
+		{
+			float specularIntensity = 0.18f;
 			float specularPower;
-			BOOL  normalMapEnabled  = TRUE;
-			float padding[1];				//텍스처좌표로 패딩값을 넣는데 원리를 아직 모르겠다.
+			BOOL  normalMapEnabled = TRUE;
+			float padding[1];
 		} pmc;
 		pmc.specularPower = shininess;
-		//해당 상수버퍼를 픽쉘세이더 슬롯1에 지정후 해당 바인더블 객체를 컨테이너에 삽입
-		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstant>::Resolve(gfx, pmc, 1u));
+
+		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantDiffnorm>::Resolve(gfx, pmc, 1u));
 	}
-	
+	//디퓨즈만 있는경우
+	else if (hasDiffuseMap)
+	{
+		Dvtx::VertexBuffer vbuf(std::move(
+			VertexLayout{}
+			.Append(VertexLayout::Position3D)
+			.Append(VertexLayout::Normal)
+			.Append(VertexLayout::Texture2D)
+		));
+
+		for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+		{
+			vbuf.EmplaceBack(
+				dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
+				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i]),
+				*reinterpret_cast<dx::XMFLOAT2*>(&mesh.mTextureCoords[0][i])
+			);
+		}
+
+		std::vector<unsigned short> indices;
+		indices.reserve(mesh.mNumFaces * 3);
+		for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+		{
+			const auto& face = mesh.mFaces[i];
+			assert(face.mNumIndices == 3);
+			indices.push_back(face.mIndices[0]);
+			indices.push_back(face.mIndices[1]);
+			indices.push_back(face.mIndices[2]);
+		}
+
+		bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
+
+		bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
+
+		auto pvs = VertexShader::Resolve(gfx, "PhongVS.cso");
+		auto pvsbc = pvs->GetBytecode();
+		bindablePtrs.push_back(std::move(pvs));
+
+		bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPS.cso"));
+
+		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
+
+		struct PSMaterialConstantDiffuse
+		{
+			float specularIntensity = 0.18f;
+			float specularPower;
+			float padding[2];
+		} pmc;
+		pmc.specularPower = shininess;
+		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantDiffuse>::Resolve(gfx, pmc, 1u));
+	}
+	//3다 없을경우
+	else if (!hasDiffuseMap && !hasNormalMap && !hasSpecularMap)
+	{
+		Dvtx::VertexBuffer vbuf(std::move(
+			VertexLayout{}
+			.Append(VertexLayout::Position3D)
+			.Append(VertexLayout::Normal)
+		));
+
+		for (unsigned int i = 0; i < mesh.mNumVertices; i++)
+		{
+			vbuf.EmplaceBack(
+				dx::XMFLOAT3(mesh.mVertices[i].x * scale, mesh.mVertices[i].y * scale, mesh.mVertices[i].z * scale),
+				*reinterpret_cast<dx::XMFLOAT3*>(&mesh.mNormals[i])
+			);
+		}
+
+		std::vector<unsigned short> indices;
+		indices.reserve(mesh.mNumFaces * 3);
+		for (unsigned int i = 0; i < mesh.mNumFaces; i++)
+		{
+			const auto& face = mesh.mFaces[i];
+			assert(face.mNumIndices == 3);
+			indices.push_back(face.mIndices[0]);
+			indices.push_back(face.mIndices[1]);
+			indices.push_back(face.mIndices[2]);
+		}
+
+		bindablePtrs.push_back(VertexBuffer::Resolve(gfx, meshTag, vbuf));
+
+		bindablePtrs.push_back(IndexBuffer::Resolve(gfx, meshTag, indices));
+
+		auto pvs = VertexShader::Resolve(gfx, "PhongVSNotex.cso");
+		auto pvsbc = pvs->GetBytecode();
+		bindablePtrs.push_back(std::move(pvs));
+
+		bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSNotex.cso"));
+
+		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
+
+		struct PSMaterialConstantNotex
+		{
+			dx::XMFLOAT4 materialColor = { 0.65f,0.65f,0.85f,1.0f };
+			float specularIntensity = 0.18f;
+			float specularPower;
+			float padding[2];
+		} pmc;
+		pmc.specularPower = shininess;
+		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantNotex>::Resolve(gfx, pmc, 1u));
+	}
+	else
+		throw std::runtime_error("머터리얼 의 텍스쳐조합이 잘못되었습니다");
+
 	// 이모든 과정을 거치면 해당 3d 오브젝트를 파싱하여 가공완료되었다.
 	// mesh 객체를 유니크포인터로 할당하여 바인딩컨테이너에서 파이프라인에 바인딩을 진행한다.
 	return std::make_unique<Mesh>(gfx, std::move(bindablePtrs));
