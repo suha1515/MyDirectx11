@@ -255,6 +255,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 	const auto base = "Models\\gobber\\"s;
 
 	bool hasSpecularMap = false;
+	bool hasAlphaGloss = false;
 	bool hasNormalMap = false;
 	bool hasDiffuseMap = false;
 	float shininess = 35.0f;
@@ -275,18 +276,21 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		//스페큘러 맵 정보를 가져온다
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			//해당 스페큘러 경로를 통해 정보 푸쉬
-			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str(), 1));
+			auto tex = Texture::Resolve(gfx, base + texFileName.C_Str(), 1u);
+			hasAlphaGloss = tex->HasAlhpa();
+			bindablePtrs.push_back(std::move(tex));
 			hasSpecularMap = true;
 		}
-		//없을경우 반짝임 정보만 넣음
-		else
+		//가져온 스페큘러맵에 알파값이없을경우 기본 값으로
+		if(!hasAlphaGloss)
 			material.Get(AI_MATKEY_SHININESS, shininess);
-
+		
 		//노멀 맵 정보를 가져온다.
 		if (material.GetTexture(aiTextureType_NORMALS, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str(), 2));
+			auto tex = Texture::Resolve(gfx, base + texFileName.C_Str(), 2u);
+			hasAlphaGloss = tex->HasAlhpa();
+			bindablePtrs.push_back(std::move(tex));
 			hasNormalMap = true;
 		}
 		//3중 하나라도 있으면 샘플러 추가.
@@ -349,11 +353,16 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		bindablePtrs.push_back(PixelShader::Resolve(gfx, "PhongPSSpecNormalMap.cso"));
 		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
+		//디퓨즈,스페큘러,노멀맵 모든것이 있을경우
 		struct PSMaterialConstantFullmonte
 		{
 			BOOL normalMapEnabled = TRUE;
-			float padding[3];
+			BOOL hasGlossMap;
+			float specularPower;
+			float padding[1];
 		}pmc;
+		pmc.specularPower = shininess;
+		pmc.hasGlossMap = hasAlphaGloss ? TRUE : FALSE;
 		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantFullmonte>::Resolve(gfx, pmc, 1u));
 	}
 	//디퓨즈,노멀맵만 있는경우
@@ -504,9 +513,10 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
+		//텍스처도 없을경우
 		struct PSMaterialConstantNotex
 		{
-			dx::XMFLOAT4 materialColor = { 0.65f,0.65f,0.85f,1.0f };
+			dx::XMFLOAT4 materialColor = { 0.45f,0.45f,0.85f,1.0f };
 			float specularIntensity = 0.18f;
 			float specularPower;
 			float padding[2];

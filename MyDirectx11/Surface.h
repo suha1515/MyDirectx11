@@ -111,10 +111,14 @@ public:
 	static Surface FromFile(const std::string& name);
 	void Save(const std::string& filename) const;
 	void Copy(const Surface& src) noexcept(!IS_DEBUG);
+	//불러온 이미지가 알파값이 불러와졌는지 확인
+	bool AlphaLoaded() const noexcept;
 private:
-	Surface(unsigned int width, unsigned int height, std::unique_ptr<Color[]> pBufferParam) noexcept;
+	Surface(unsigned int width, unsigned int height, std::unique_ptr<Color[]> pBufferParambool,bool alphaLoaded = false) noexcept;
 private:
 	std::unique_ptr<Color[]> pBuffer;
 	unsigned int width;
 	unsigned int height;
+	
+	bool alphaLoaded = false;
 };

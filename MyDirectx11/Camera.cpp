@@ -46,9 +46,9 @@ void Camera::SpwanControlWindow() noexcept
 //모든 카메라 변수 초기화.
 void Camera::Reset() noexcept
 {
-	pos = { 0.0f,0.0f,-10.0f };
+	pos = { -10.0f,0.0f,-20.0f };
 	pitch = 0.0f;
-	yaw = 0.0f;
+	yaw = 0.45f;
 }
 
 //카메라 회전

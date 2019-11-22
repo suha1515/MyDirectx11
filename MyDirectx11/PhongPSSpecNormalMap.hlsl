@@ -13,7 +13,9 @@
 cbuffer ObjectCBuf
 {
     bool normalMapEnabled;
-    float padding[3];
+    bool hasGloss;
+    float specularPowerConst;
+    float padding[1];
 };
 
 Texture2D tex;
@@ -62,8 +64,15 @@ float4 main(float3 viewPos : Position, float3 n : Normal, float3 tan : Tangent, 
     const float4 specularSample = spec.Sample(splr, tc);
     //수치화된 스페큘러가 아닌. 스페큘러맵에서 강도를 가져온다.
     const float3 specularReflectionColor = specularSample.rgb;
-    //const float  specularPower = specularSample.a*specularPowerFactor;
-    const float specularPower = pow(2.0f, specularSample.a * 13.0f);
+    float specularPower;
+    if (hasGloss)
+    {
+        specularPower = pow(2.0f, specularSample.a * 13.0f);
+    }
+    else
+    {
+        specularPower = specularPowerConst;
+    }
     const float3 specular = att * (diffuseColor * diffuseIntensity) * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), specularPower);
 	// 최종 색 (텍스처 기반 색)
     return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specular * specularReflectionColor), 1.0f);
