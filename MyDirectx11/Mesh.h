@@ -8,6 +8,8 @@
 #include <assimp/postprocess.h>
 #include "ConditionalNoexcept.h"
 #include "ConstantBuffer.h"
+#include <type_traits>
+#include "imgui/imgui.h"
 
 
 //모델 불러오기 예외처리 클래스
@@ -57,13 +59,74 @@ public:
 		DirectX::XMFLOAT3 specularColor = { 0.75f,0.75f,0.75f };
 		float specularMapWeight = 0.671f;
 	};
+	struct PSMaterialConstantNotex
+	{
+		DirectX::XMFLOAT4 materialColor = { 0.447970f,0.327254f,0.176283f,1.0f };
+		DirectX::XMFLOAT4 specularColor = { 0.65f,0.65f,0.65f,1.0f };
+		float specularPower = 120.0f;
+		float padding[3];
+	};
 public:
 	Node(int id,const std::string& name,std::vector<Mesh*> meshPtrs, const DirectX::XMMATRIX& transform) noxnd;
 	void Draw(Graphics& gfx, DirectX::FXMMATRIX accumulatedTransform) const noxnd;
 	void SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept;	//트랜스폼을 적용한다.
 	int GetId()const noexcept;
 	void ShowTree(Node*& pSelectedNode) const noexcept;
-	void ControlMesh(Graphics& gfx, PSMaterialConstantFullmonte& c);
+	template<class T>
+	bool ConrolMesh(Graphics& gfx, T& c)
+	{
+		if (meshPtrs.empty())
+			return false;
+		//if constexpr 조건문을 컴파일타임에서 판단한다.
+		// std::is_same<T,U> T와 U 가 같은 타입인지 확인하며 상수불변수 ::value를 제공한다
+		// 같을시 true, 다를시 false;
+		if constexpr (std::is_same<T, PSMaterialConstantFullmonte>::value)
+		{
+			if (auto pcb = meshPtrs.front()->QueryBindable<Bind::PixelConstantBuffer<T>>())
+			{
+				ImGui::Text("Material");
+
+				bool normalMapEnabled = (bool)c.normalMapEnabled;
+				ImGui::Checkbox("Norm Map", &normalMapEnabled);
+				c.normalMapEnabled = normalMapEnabled ? TRUE : FALSE;
+
+				bool specularMapEnabled = (bool)c.specularMapEnabled;
+				ImGui::Checkbox("Spec Map", &specularMapEnabled);
+				c.specularMapEnabled = specularMapEnabled ? TRUE : FALSE;
+
+				bool hasGlossMap = (bool)c.hasGlossMap;
+				ImGui::Checkbox("Gloss Alpha", &hasGlossMap);
+				c.hasGlossMap = hasGlossMap ? TRUE : FALSE;
+
+				ImGui::SliderFloat("Spec Weight", &c.specularMapWeight, 0.0f, 2.0f);
+
+				ImGui::SliderFloat("Spec Pow", &c.specularPower, 0.0f, 1000.0f,"%f",5.0f);
+
+				ImGui::ColorPicker3("Spec Color", reinterpret_cast<float*>(&c.specularColor));
+
+				pcb->Update(gfx, c);
+				return true;
+			}
+		}
+		//PSMaterialConstantNotex 일경우
+		else if constexpr (std::is_same<T, PSMaterialConstantNotex>::value)
+		{
+			if (auto pcb = meshPtrs.front()->QueryBindable<Bind::PixelConstantBuffer<T>>())
+			{
+				ImGui::Text("Material");
+
+				ImGui::ColorPicker3("Spec Color.", reinterpret_cast<float*>(&c.specularColor));
+
+				ImGui::SliderFloat("Spec Pow", &c.specularPower, 0.0f, 1000.0f, "%f", 5.0f);
+
+				ImGui::ColorPicker3("Diff Color", reinterpret_cast<float*>(&c.materialColor));
+
+				pcb->Update(gfx, c);
+				return true;
+			}
+		}
+		return false;
+	}
 private:
 	void AddChild(std::unique_ptr<Node> pChild) noxnd;
 	// 인덱스를 통해 직접 노드에 접근할수 있다.

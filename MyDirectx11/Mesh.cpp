@@ -118,36 +118,6 @@ void Node::ShowTree( Node*& pSelectedNode) const noexcept
 		ImGui::TreePop();
 	}
 }
-void Node::ControlMesh(Graphics& gfx, PSMaterialConstantFullmonte& c)
-{
-	if (meshPtrs.empty())
-	{
-		return;
-	}
-	if (auto pcb = meshPtrs.front()->QueryBindable<Bind::PixelConstantBuffer<PSMaterialConstantFullmonte>>())
-	{
-		ImGui::Text("Material");
-
-		bool normalMapEnabled = (bool)c.normalMapEnabled;
-		ImGui::Checkbox("Norm Map", &normalMapEnabled);
-		c.normalMapEnabled = normalMapEnabled ? TRUE : FALSE;
-
-		bool specularMapEnabled = (bool)c.specularMapEnabled;
-		ImGui::Checkbox("Spec Map", &specularMapEnabled);
-		c.specularMapEnabled = specularMapEnabled ? TRUE : FALSE;
-
-		bool hasGlossMap = (bool)c.hasGlossMap;
-		ImGui::Checkbox("Gloss Alpha", &hasGlossMap);
-		c.hasGlossMap = hasGlossMap ? TRUE : FALSE;
-
-		ImGui::SliderFloat("Spec Weight", &c.specularMapWeight, 0.0f, 2.0f);
-		ImGui::SliderFloat("Spec Pow", &c.specularPower, 0.0f, 1000.0f, "%f", 5.0f);
-		ImGui::ColorPicker3("Spec Color", reinterpret_cast<float*>(&c.specularColor));
-
-		pcb->Update(gfx, c);
-	}
-
-}
 void Node::SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept
 {
 	dx::XMStoreFloat4x4(&appliedTransform, transform);
@@ -190,7 +160,12 @@ public:
 				ImGui::SliderFloat("X", &transform.x, -20.0f, 20.0f);
 				ImGui::SliderFloat("Y", &transform.y, -20.0f, 20.0f);
 				ImGui::SliderFloat("Z", &transform.z, -20.0f, 20.0f);
-				pSelectedNode->ControlMesh(gfx, mc);
+
+				if (!pSelectedNode->ConrolMesh(gfx, skinMaterial))
+				{
+					pSelectedNode->ConrolMesh(gfx, ringMaterial);
+				}
+
 			}
 		}
 		ImGui::End();
@@ -219,7 +194,8 @@ private:
 		float y = 0.0f;
 		float z = 0.0f;
 	} ;
-	Node::PSMaterialConstantFullmonte mc;
+	Node::PSMaterialConstantFullmonte skinMaterial;
+	Node::PSMaterialConstantNotex ringMaterial;
 	std::unordered_map<int, TransformParameters> transforms;	//모델 gui 에서 인덱스에 해당하는 노드의 트랜스폼을 저장한다.
 };
 
@@ -447,12 +423,13 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		//스페큘러가 없으니 스페큘러 강도와 승수등을 정해줘야한다.
 		struct PSMaterialConstantDiffnorm
 		{
-			float specularIntensity = 0.18f;
+			float specularIntensity;
 			float specularPower;
 			BOOL  normalMapEnabled = TRUE;
 			float padding[1];
 		} pmc;
 		pmc.specularPower = shininess;
+		pmc.specularIntensity = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
 
 		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantDiffnorm>::Resolve(gfx, pmc, 1u));
 	}
@@ -500,11 +477,13 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 
 		struct PSMaterialConstantDiffuse
 		{
-			float specularIntensity = 0.18f;
+			float specularIntensity;
 			float specularPower;
 			float padding[2];
 		} pmc;
 		pmc.specularPower = shininess;
+		pmc.specularIntensity = (specularColor.x + specularColor.y + specularColor.z) / 3.0f;
+
 		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantDiffuse>::Resolve(gfx, pmc, 1u));
 	}
 	//3다 없을경우
@@ -548,15 +527,12 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		bindablePtrs.push_back(InputLayout::Resolve(gfx, vbuf.GetLayout(), pvsbc));
 
 		//텍스처도 없을경우
-		struct PSMaterialConstantNotex
-		{
-			dx::XMFLOAT4 materialColor = { 0.45f,0.45f,0.85f,1.0f };
-			float specularIntensity = 0.18f;
-			float specularPower;
-			float padding[2];
-		} pmc;
+		Node::PSMaterialConstantNotex pmc;
 		pmc.specularPower = shininess;
-		bindablePtrs.push_back(PixelConstantBuffer<PSMaterialConstantNotex>::Resolve(gfx, pmc, 1u));
+		pmc.specularColor = specularColor;
+		pmc.materialColor = diffuseColor;
+
+		bindablePtrs.push_back(PixelConstantBuffer<Node::PSMaterialConstantNotex>::Resolve(gfx, pmc, 1u));
 	}
 	else
 		throw std::runtime_error("머터리얼 의 텍스쳐조합이 잘못되었습니다");
