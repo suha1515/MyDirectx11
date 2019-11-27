@@ -27,20 +27,22 @@ Texture2D nmap;
 
 SamplerState splr;
 
-float4 main(float3 viewPos : Position, float3 n : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 viewPos : Position, float3 n : viewNormal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
 {
     if(normalMapEnabled)
     {
         const float3x3 tanToView = float3x3(
         normalize(tan),
         normalize(bitan),
-        normalize(n)
+        normalize(viewNormal)
         );
 
+		//³ë¸Ö »ùÇÃ¸µ
         const float3 normalSample = nmap.Sample(splr, tc).xyz;
-        n = normalSample * 2.0f - 1.0f;
+		float3 tanNormal;
+        tanNormal = normalSample * 2.0f - 1.0f;
         // bring normal from tanspace into view space
-        n = mul(n, tanToView);
+		viewNormal = mul(tanNormal, tanToView);
     }
 
 
@@ -54,12 +56,12 @@ float4 main(float3 viewPos : Position, float3 n : Normal, float3 tan : Tangent, 
     // ºû °¨¼âÄ¡ Á¤ÇÏ±â
     const float att = 1.0f / (attConst + attLin * distToL + attQuad * (distToL * distToL));
 	// ºû °­µµ
-    const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, n));
+    const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, viewNormal));
     //************//
 
     //***Á¤¹Ý»ç***//
     //ºûº¤ÅÍ¿¡ ´ëÇÑ ¹Ý»çº¤ÅÍ
-    const float3 w = n * dot(vToL, n);
+    const float3 w = viewNormal * dot(vToL, viewNormal);
     const float3 r = w * 2.0f - vToL;
     
 

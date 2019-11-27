@@ -22,7 +22,7 @@ Texture2D tex;
 SamplerState splr;
 
 
-float4 main(float3 viewPos : POSITION, float3 n : NORMAL, float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 viewPos : POSITION, float3 viewNormal : NORMAL, float2 tc : Texcoord) : SV_TARGET
 {
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
     const float3 vToL = lightPos - viewPos;
@@ -34,12 +34,12 @@ float4 main(float3 viewPos : POSITION, float3 n : NORMAL, float2 tc : Texcoord) 
     // 빛 감쇄치 정하기
     const float  att = 1.0f / (attConst + attLin * distToL + attQuad * (distToL * distToL));
 	// 빛 강도
-    const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, n));
+    const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, viewNormal));
     //************//
 
     //***정반사***//
     //빛벡터에 대한 반사벡터
-    const float3 w = n * dot(vToL, n);
+    const float3 w = viewNormal * dot(vToL, viewNormal);
     const float3 r = w * 2.0f - vToL;
     //시야벡터와 빛반사벡터 사이의 각도를 기반으로 정반사의 강도를 제곱수와 함께 구한다
     const float3 specular = att * (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), specularPower);
