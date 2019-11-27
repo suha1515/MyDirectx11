@@ -41,7 +41,7 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : 
         );
         // unpack the normal from map into tangent space        
         const float3 normalSample = nmap.Sample(splr, tc).xyz;
-		float tanNormal;
+		float3 tanNormal;
 		tanNormal = normalSample * 2.0f - 1.0f;
 		tanNormal.y = -tanNormal.y;
         // bring normal from tanspace into view space

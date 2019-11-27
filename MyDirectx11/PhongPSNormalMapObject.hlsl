@@ -36,7 +36,7 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float2 tc : T
     {
         // unpack normal data
         const float3 normalSample = nmap.Sample(splr, tc).xyz;
-		float tanNormal;
+		float3 tanNormal;
 		tanNormal.x = normalSample.x * 2.0f - 1.0f;
 		tanNormal.y = -normalSample.y * 2.0f + 1.0f;
 		tanNormal.z = -normalSample.z * 2.0f + 1.0f;

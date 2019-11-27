@@ -27,27 +27,65 @@ Texture2D nmap;
 
 SamplerState splr;
 
-float3 MapNormalViewSpace(const float3 tan, const float3 bitan, const float3 viewNormal, const float2 tc, Texture2D nmap, SamplerState splr)
+float3 MapNormal(const in float3 tan,
+	const in float3 bitan,
+	const in float3 normal,
+	const in float2 tc,
+	uniform Texture2D nmap,
+	uniform SamplerState splr)
 {
-	const float3x3 tanToView = float3x3(
+	// tan/bitan/normal 을이용하여 같은공간(타겟)으로 변환시키는 변환행렬 생성
+	const float3x3 tanToTarget = float3x3(
 		normalize(tan),
 		normalize(bitan),
-		normalize(viewNormal));
+		normalize(normal));
 
 	const float3 normalSample = nmap.Sample(splr, tc).xyz;
 	const float3 tanNormal = normalSample * 2.0f - 1.0f;
 
-	return normalize(mul(tanNormal, tanToView));
+	return normalize(mul(tanNormal, tanToTarget));
 }
 
-float4 main(float3 viewPos : Position, float3 n : viewNormal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
+//const in float <<- ? 무슨 키워드지?
+float Attenuate(uniform float attConst, uniform float attLin, uniform float attQuad, const in float distFragToL)
+{
+	return 1.0f / (attConst + attLin * distFragToL + attQuad * (distFragToL * distFragToL));
+}
+
+float3 Diffuse(
+	uniform float3 diffuseColor,
+	uniform float diffuseIntensity,
+	const in float att,
+	const in float3 viewDirFragToL,
+	const in float3 viewNormal)
+{
+	return diffuseColor * diffuseIntensity * att * max(0.0f, dot(viewDirFragToL, viewNormal));
+}
+
+float3 Speculate(
+	const in float3 specularColor,
+	uniform float specularIntensity,
+	const in float3 viewNormal,
+	const in float3 viewFragToL,
+	const in float3 viewPos,
+	const in float att,
+	const in float specularPower)
+{
+	//반사 벡터 계산
+	const float3 w = viewNormal * dot(viewFragToL, viewNormal);
+	const float3 r = normalize(w * 2.0f - viewFragToL);
+	//뷰스페이스에서 카메라에서 정점으로의 벡터
+	const float3 viewCamToFrag = normalize(viewPos);
+	//정반사의 양을 시야벡터와 반사벡터사이의 각에의해 정한다. ( 범위는 제곱승수로 좁힌다)
+	return att * specularColor * specularIntensity * pow(max(0.0f, dot(-r, viewCamToFrag)), specularPower);
+}
+
+float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
 {
     if(normalMapEnabled)
     {
-		viewNormal = MapNormalViewSpace(tan, bitan, viewNormal, tc, nmap, splr);
+		viewNormal = MapNormal(tan, bitan, viewNormal, tc, nmap, splr);
     }
-
-
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
     const float3 viewFragToL = viewLightPos - viewPos;
 	//정점부터 광원까지의 거리
@@ -56,16 +94,10 @@ float4 main(float3 viewPos : Position, float3 n : viewNormal, float3 tan : Tange
     const float3 viewDirFragToL = viewFragToL / distFragToL;
 	//***점광원***//
     // 빛 감쇄치 정하기
-    const float att = 1.0f / (attConst + attLin * distFragToL + attQuad * (distFragToL * distFragToL));
+	const float att = Attenuate(attConst, attLin, attQuad, distFragToL);
 	// 빛 강도
-    const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(viewDirFragToL, viewNormal));
+	const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, viewDirFragToL, viewNormal);
     //************//
-
-    //***정반사***//
-    //빛벡터에 대한 반사벡터
-    const float3 w = viewNormal * dot(viewFragToL, viewNormal);
-    const float3 r = w * 2.0f - viewFragToL;
-    
 
     //시선벡터와 반사벡터사이의 각에 기반하여 정반사 강도를 구한다.
     float3 specularReflectionColor;
@@ -87,7 +119,8 @@ float4 main(float3 viewPos : Position, float3 n : viewNormal, float3 tan : Tange
     {
         specularReflectionColor = specularColor;
     }
-    const float3 specular = att * (diffuseColor * diffuseIntensity) * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), specularPower);
+	// 정반사
+	const float3 specularReflected = Speculate(specularReflectionColor, 1.0f, viewNormal, viewFragToL, viewPos, att, specularPower);
 	// 최종 색 (텍스처 기반 색)
-    return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specular * specularReflectionColor), 1.0f);
+    return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specularReflected * specularReflectionColor), 1.0f);
 }
