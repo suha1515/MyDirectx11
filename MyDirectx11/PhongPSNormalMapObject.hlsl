@@ -40,7 +40,8 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float2 tc : T
 		tanNormal.x = normalSample.x * 2.0f - 1.0f;
 		tanNormal.y = -normalSample.y * 2.0f + 1.0f;
 		tanNormal.z = -normalSample.z * 2.0f + 1.0f;
-		viewNormal = mul(tanNormal, (float3x3) modelView);
+		// 노멀을 오브젝트스페이스에서 뷰스페이스로 가져온다. 다시 정규화도진행
+		viewNormal = normalize(mul(tanNormal, (float3x3) modelView));
     }
 	// fragment to light vector data
     const float3 vToL = lightPos - viewPos;

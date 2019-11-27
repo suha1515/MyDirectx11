@@ -42,7 +42,8 @@ float4 main(float3 viewPos : Position, float3 n : viewNormal, float3 tan : Tange
 		float3 tanNormal;
         tanNormal = normalSample * 2.0f - 1.0f;
         // bring normal from tanspace into view space
-		viewNormal = mul(tanNormal, tanToView);
+		// 다시 정규화를 해준다.
+		viewNormal = normalize(mul(tanNormal, tanToView));
     }
 
 

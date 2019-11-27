@@ -19,6 +19,8 @@ cbuffer ObjectCBuf
 
 float4 main(float3 viewPos : Position, float3 viewNormal : Normal) : SV_Target
 {
+	// 보간된 노말을 재 정규화해준다.
+	viewNormal = normalize(viewNormal);
 	// fragment to light vector data
     const float3 vToL = lightPos - viewPos;
     const float distToL = length(vToL);

@@ -24,6 +24,7 @@ SamplerState splr;
 
 float4 main(float3 viewPos : POSITION, float3 viewNormal : NORMAL, float2 tc : Texcoord) : SV_TARGET
 {
+	viewNormal = normalize(viewNormal);
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
     const float3 vToL = lightPos - viewPos;
 	//정점부터 광원까지의 거리

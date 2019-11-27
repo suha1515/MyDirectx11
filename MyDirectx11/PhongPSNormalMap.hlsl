@@ -45,7 +45,7 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : 
 		tanNormal = normalSample * 2.0f - 1.0f;
 		tanNormal.y = -tanNormal.y;
         // bring normal from tanspace into view space
-		viewNormal = mul(tanNormal, tanToView);
+		viewNormal = normalize(mul(tanNormal, tanToView));
     }
    //물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
     const float3 vToL = lightPos - viewPos;
