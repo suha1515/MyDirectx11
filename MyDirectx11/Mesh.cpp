@@ -3,6 +3,7 @@
 #include "Surface.h"
 #include <unordered_map>
 #include <sstream>
+#include <filesystem>
 
 namespace dx = DirectX;
 
@@ -204,11 +205,11 @@ private:
 	3d 오브젝트를 불러오고 메쉬,노드로 나누어서 보관한다
 */
 //3d 모델을 assimp로 불러온다.
-Model::Model(Graphics& gfx, const std::string fileName)
+Model::Model(Graphics& gfx, const std::string& pathString)
 	:pWindow(std::make_unique<ModelWindow>())
 {
 	Assimp::Importer imp;
-	const auto pScene = imp.ReadFile(fileName.c_str(),
+	const auto pScene = imp.ReadFile(pathString.c_str(),
 		aiProcess_Triangulate |
 		aiProcess_JoinIdenticalVertices|
 		aiProcess_ConvertToLeftHanded|	//왼손좌표계로
@@ -223,7 +224,7 @@ Model::Model(Graphics& gfx, const std::string fileName)
 
 	//해당 오브젝트의 매쉬를 벡터에 삽입,aiScene에 있는 머터리얼배열 도 같이 파싱한다.
 	for (size_t i = 0; i < pScene->mNumMeshes; ++i)
-		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i], pScene->mMaterials));
+		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i], pScene->mMaterials,pathString));
 
 	//루트노드를 ParseNode에 전달한다.
 	int nextId = 0;
@@ -252,15 +253,18 @@ Model::~Model() noexcept
 {
 }
 // 오브젝트의 메쉬에 접근하여 정보를 가공한다.
-std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterial)
+std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterial, const std::filesystem::path& path)
 {
 	//aiMesh는 말그대로 여러정점과 인덱스로 이루어진 기하구조이다.
 	using namespace std::string_literals;
 	using namespace Bind;
 	using Dvtx::VertexLayout;
 
+	//모델 경로.
+	const auto rootPath = path.parent_path().string() + "\\";
+
 	std::vector<std::shared_ptr<Bindable>> bindablePtrs;
-	const auto base = "Models\\gobber\\"s;
+
 
 	bool hasSpecularMap = false;
 	bool hasAlphaGloss = false;
@@ -279,7 +283,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		if (material.GetTexture(aiTextureType_DIFFUSE, 0, &texFileName) == aiReturn_SUCCESS)
 		{
 			//해당 텍스쳐 푸쉬
-			bindablePtrs.push_back(Texture::Resolve(gfx, base + texFileName.C_Str()));
+			bindablePtrs.push_back(Texture::Resolve(gfx, rootPath + texFileName.C_Str()));
 			hasDiffuseMap = true;
 		}
 		else
@@ -289,7 +293,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		//스페큘러 맵 정보를 가져온다
 		if (material.GetTexture(aiTextureType_SPECULAR, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			auto tex = Texture::Resolve(gfx, base + texFileName.C_Str(), 1u);
+			auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str(), 1u);
 			hasAlphaGloss = tex->HasAlhpa();
 			bindablePtrs.push_back(std::move(tex));
 			hasSpecularMap = true;
@@ -304,7 +308,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 		//노멀 맵 정보를 가져온다.
 		if (material.GetTexture(aiTextureType_NORMALS, 0, &texFileName) == aiReturn_SUCCESS)
 		{
-			auto tex = Texture::Resolve(gfx, base + texFileName.C_Str(), 2u);
+			auto tex = Texture::Resolve(gfx, rootPath + texFileName.C_Str(), 2u);
 			hasAlphaGloss = tex->HasAlhpa();
 			bindablePtrs.push_back(std::move(tex));
 			hasNormalMap = true;
@@ -314,7 +318,7 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 			bindablePtrs.push_back(Bind::Sampler::Resolve(gfx));
 	}
 	//메쉬 태그
-	const auto meshTag = base + "%" + mesh.mName.C_Str();
+	const auto meshTag = rootPath + "%" + mesh.mName.C_Str();
 	//스케일
 	const float scale = 6.0f;
 

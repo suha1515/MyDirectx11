@@ -9,6 +9,7 @@
 #include "ConditionalNoexcept.h"
 #include "ConstantBuffer.h"
 #include <type_traits>
+#include <filesystem>
 #include "imgui/imgui.h"
 
 
@@ -147,7 +148,7 @@ private:
 class Model
 {
 public:
-	Model(Graphics& gfx, const std::string fileName);
+	Model(Graphics& gfx, const std::string& pathString);
 	void Draw(Graphics& gfx) const noxnd;
 	void ShowWindow(Graphics& gfx,const char* windowName = nullptr) noexcept;
 	void SetRootTransform(DirectX::FXMMATRIX tf) noexcept;
@@ -158,7 +159,7 @@ private:
 	// 흔치는 않지만 일단 const aiMaterial* const 는 const 객체를 가르키는 const 포인터이다
 	// 여기서 또뒤에 * 가들어간이유는.. 일단 .aiMaterial은 이중포인터이고 머터리얼 배열을 가르킨다.
 	// 즉 머터리얼의 첫주소가 들어가야하는데 설명으로는 상수가아닌 포인터를 상수포인터에넘기며 그 상수가아닌 포인터는 배열을 가르킨다..? 일단 나중에 자세히 알아보자.
-	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiMesh& mesh,const aiMaterial* const* pMaterial);
+	static std::unique_ptr<Mesh> ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterial, const std::filesystem::path& path);
 	std::unique_ptr<Node> ParseNode(int& nexId,const aiNode& node) noexcept;
 private:
 	std::unique_ptr<Node> pRoot;
