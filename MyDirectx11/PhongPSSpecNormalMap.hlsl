@@ -1,6 +1,6 @@
  cbuffer LightBuf
 {
-	float3 lightPos;            //광원위치
+	float3 viewLightPos;            //광원위치
     float3 ambient;             //주변광
     float3 diffuseColor;        //확산광
     float  diffuseIntensity;    //확산광 세기
@@ -27,43 +27,44 @@ Texture2D nmap;
 
 SamplerState splr;
 
+float3 MapNormalViewSpace(const float3 tan, const float3 bitan, const float3 viewNormal, const float2 tc, Texture2D nmap, SamplerState splr)
+{
+	const float3x3 tanToView = float3x3(
+		normalize(tan),
+		normalize(bitan),
+		normalize(viewNormal));
+
+	const float3 normalSample = nmap.Sample(splr, tc).xyz;
+	const float3 tanNormal = normalSample * 2.0f - 1.0f;
+
+	return normalize(mul(tanNormal, tanToView));
+}
+
 float4 main(float3 viewPos : Position, float3 n : viewNormal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
 {
     if(normalMapEnabled)
     {
-        const float3x3 tanToView = float3x3(
-        normalize(tan),
-        normalize(bitan),
-        normalize(viewNormal)
-        );
-
-		//노멀 샘플링
-        const float3 normalSample = nmap.Sample(splr, tc).xyz;
-		float3 tanNormal;
-        tanNormal = normalSample * 2.0f - 1.0f;
-        // bring normal from tanspace into view space
-		// 다시 정규화를 해준다.
-		viewNormal = normalize(mul(tanNormal, tanToView));
+		viewNormal = MapNormalViewSpace(tan, bitan, viewNormal, tc, nmap, splr);
     }
 
 
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
-    const float3 vToL = lightPos - viewPos;
+    const float3 viewFragToL = viewLightPos - viewPos;
 	//정점부터 광원까지의 거리
-    const float distToL = length(vToL);
+    const float distFragToL = length(viewFragToL);
 	//정점부터 광원까지의 방향벡터
-    const float3 dirToL = vToL / distToL;
+    const float3 viewDirFragToL = viewFragToL / distFragToL;
 	//***점광원***//
     // 빛 감쇄치 정하기
-    const float att = 1.0f / (attConst + attLin * distToL + attQuad * (distToL * distToL));
+    const float att = 1.0f / (attConst + attLin * distFragToL + attQuad * (distFragToL * distFragToL));
 	// 빛 강도
-    const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, viewNormal));
+    const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(viewDirFragToL, viewNormal));
     //************//
 
     //***정반사***//
     //빛벡터에 대한 반사벡터
-    const float3 w = viewNormal * dot(vToL, viewNormal);
-    const float3 r = w * 2.0f - vToL;
+    const float3 w = viewNormal * dot(viewFragToL, viewNormal);
+    const float3 r = w * 2.0f - viewFragToL;
     
 
     //시선벡터와 반사벡터사이의 각에 기반하여 정반사 강도를 구한다.
