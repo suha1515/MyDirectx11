@@ -35,10 +35,7 @@ float3 MapNormal(const in float3 tan,
 	uniform SamplerState splr)
 {
 	// tan/bitan/normal 을이용하여 같은공간(타겟)으로 변환시키는 변환행렬 생성
-	const float3x3 tanToTarget = float3x3(
-		normalize(tan),
-		normalize(bitan),
-		normalize(normal));
+	const float3x3 tanToTarget = float3x3(tan, bitan, normal);
 
 	const float3 normalSample = nmap.Sample(splr, tc).xyz;
 	const float3 tanNormal = normalSample * 2.0f - 1.0f;
@@ -80,11 +77,13 @@ float3 Speculate(
 	return att * specularColor * specularIntensity * pow(max(0.0f, dot(-r, viewCamToFrag)), specularPower);
 }
 
-float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 viewTan : Tangent, float3 viewBitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
 {
+	//메쉬 노멀 정규화
+	viewNormal = normalize(viewNormal);
     if(normalMapEnabled)
     {
-		viewNormal = MapNormal(tan, bitan, viewNormal, tc, nmap, splr);
+		viewNormal = MapNormal(normalize(viewTan), normalize(viewBitan), viewNormal, tc, nmap, splr);
     }
 	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
     const float3 viewFragToL = viewLightPos - viewPos;
@@ -92,12 +91,6 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : 
     const float distFragToL = length(viewFragToL);
 	//정점부터 광원까지의 방향벡터
     const float3 viewDirFragToL = viewFragToL / distFragToL;
-	//***점광원***//
-    // 빛 감쇄치 정하기
-	const float att = Attenuate(attConst, attLin, attQuad, distFragToL);
-	// 빛 강도
-	const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, viewDirFragToL, viewNormal);
-    //************//
 
     //시선벡터와 반사벡터사이의 각에 기반하여 정반사 강도를 구한다.
     float3 specularReflectionColor;
@@ -119,6 +112,10 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : 
     {
         specularReflectionColor = specularColor;
     }
+	//빛감쇄
+	const float att = Attenuate(attCOnst, attLin, attQuad, distFragToL);
+	// 확산광
+	const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, viewDirFragToL, viewNormal);
 	// 정반사
 	const float3 specularReflected = Speculate(specularReflectionColor, 1.0f, viewNormal, viewFragToL, viewPos, att, specularPower);
 	// 최종 색 (텍스처 기반 색)
