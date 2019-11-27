@@ -18,7 +18,9 @@ App::App()
 	light(wnd.Gfx())
 {
 	wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
-	tp.SetPos({ 1.5f,0.0f,0.0f });
+	tp.SetPos({ 12.0f,0.0f,0.0f });
+	gobber.SetRootTransform(dx::XMMatrixTranslation(0.0f, 0.0f, -4.0f));
+	nano.SetRootTransform(dx::XMMatrixTranslation(0.0f, -7.0f, 6.0f));
 	wnd.Gfx().SetProjection(DirectX::XMMatrixPerspectiveLH(1.0f, 9.0f / 16.0f, 0.5f, 40.0f));
 }
 

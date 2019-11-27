@@ -205,7 +205,7 @@ private:
 	3d 오브젝트를 불러오고 메쉬,노드로 나누어서 보관한다
 */
 //3d 모델을 assimp로 불러온다.
-Model::Model(Graphics& gfx, const std::string& pathString)
+Model::Model(Graphics& gfx, const std::string& pathString,const float scale)
 	:pWindow(std::make_unique<ModelWindow>())
 {
 	Assimp::Importer imp;
@@ -224,8 +224,8 @@ Model::Model(Graphics& gfx, const std::string& pathString)
 
 	//해당 오브젝트의 매쉬를 벡터에 삽입,aiScene에 있는 머터리얼배열 도 같이 파싱한다.
 	for (size_t i = 0; i < pScene->mNumMeshes; ++i)
-		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i], pScene->mMaterials,pathString));
-
+		meshPtrs.push_back(ParseMesh(gfx, *pScene->mMeshes[i], pScene->mMaterials,pathString,scale));
+	
 	//루트노드를 ParseNode에 전달한다.
 	int nextId = 0;
 	pRoot = ParseNode(nextId ,*pScene->mRootNode);
@@ -253,7 +253,7 @@ Model::~Model() noexcept
 {
 }
 // 오브젝트의 메쉬에 접근하여 정보를 가공한다.
-std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterial, const std::filesystem::path& path)
+std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const aiMaterial* const* pMaterial, const std::filesystem::path& path,float scale)
 {
 	//aiMesh는 말그대로 여러정점과 인덱스로 이루어진 기하구조이다.
 	using namespace std::string_literals;
@@ -319,8 +319,6 @@ std::unique_ptr<Mesh> Model::ParseMesh(Graphics& gfx, const aiMesh& mesh, const 
 	}
 	//메쉬 태그
 	const auto meshTag = rootPath + "%" + mesh.mName.C_Str();
-	//스케일
-	const float scale = 6.0f;
 
 	if (hasDiffuseMap && hasNormalMap && hasSpecularMap)
 	{
