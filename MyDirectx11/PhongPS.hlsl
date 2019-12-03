@@ -1,13 +1,7 @@
- cbuffer LightBuf
-{
-	float3 lightPos;            //광원위치
-    float3 ambient;             //주변광
-    float3 diffuseColor;        //확산광
-    float  diffuseIntensity;    //확산광 세기
-    float attConst;             //빛 감쇄 상수
-    float attLin;               //빛 감쇄 거리
-    float attQuad;              //빛 감쇄 정방체
-};
+#include "ShaderOps.hlsl"
+#include "LightVectorData.hlsl"
+
+#include "PointLight.hlsl"
 
 //오브젝트 고유의 색과 빛나는정도를 정한다.
 cbuffer ObjectCBuf
@@ -22,15 +16,10 @@ Texture2D tex;
 SamplerState splr;
 
 
-float4 main(float3 viewPos : POSITION, float3 viewNormal : NORMAL, float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 viewFragPos : POSITION, float3 viewNormal : NORMAL, float2 tc : Texcoord) : SV_TARGET
 {
 	viewNormal = normalize(viewNormal);
-	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
-    const float3 vToL = lightPos - viewPos;
-	//정점부터 광원까지의 거리
-    const float  distToL = length(vToL);
-	//정점부터 광원까지의 방향벡터
-    const float3 dirToL = vToL / distToL;
+	const LightVectorData lv = CalculateLightVectorData(viewLightPos, viewFragPos);
 	//***점광원***//
     // 빛 감쇄치 정하기
     const float  att = 1.0f / (attConst + attLin * distToL + attQuad * (distToL * distToL));
@@ -39,15 +28,15 @@ float4 main(float3 viewPos : POSITION, float3 viewNormal : NORMAL, float2 tc : T
     //************//
 
     //***정반사***//
-    //빛벡터에 대한 반사벡터
-    const float3 w = viewNormal * dot(vToL, viewNormal);
-    const float3 r = w * 2.0f - vToL;
-    //시야벡터와 빛반사벡터 사이의 각도를 기반으로 정반사의 강도를 제곱수와 함께 구한다
-    const float3 specular = att * (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), specularPower);
+	// attenuation
+	const float att = Attenuate(attConst, attLin, attQuad, lv.distToL);
+	// diffuse
+	const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, lv.dirToL, viewNormal);
+	// specular
+	const float3 specular = Speculate(diffuseColor, diffuseIntensity, viewNormal, lv.vToL, viewFragPos, att, specularPower);
     //************//
 
 	// 최종 색 (텍스처 기반 색)
-    //return float4(saturate(diffuse + ambient + specular), 1.0f) * tex.Sample(splr, tc);
     return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specular), 1.0f);
 }
 

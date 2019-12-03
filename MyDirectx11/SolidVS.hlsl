@@ -1,11 +1,6 @@
 // Solid 쉐이더
 // 단순히 색깔만 표현하는 쉐이더이다.
-
-cbuffer CBuf
-{
-    matrix modelView;
-    matrix modelViewProj;
-}
+#include "Transform.hlsl"
 
 float4 main( float3 pos : POSITION ) : SV_POSITION
 {

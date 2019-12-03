@@ -1,13 +1,7 @@
-cbuffer LightCBuf
-{
-    float3 lightPos;
-    float3 ambient;
-    float3 diffuseColor;
-    float diffuseIntensity;
-    float attConst;
-    float attLin;
-    float attQuad;
-};
+#include "ShaderOps.hlsl"
+#include "LightVectorData.hlsl"
+
+#include "PointLight.hlsl"
 
 cbuffer ObjectCBuf
 {
@@ -28,45 +22,26 @@ Texture2D nmap : register(t2);
 
 SamplerState splr;
 
-float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 tan : Tangent, float3 bitan : Bitangent, float2 tc : TEXcoord) : SV_TARGET
+float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float3 viewTan : Tangent, float3 viewBitan : Bitangent, float2 tc : TEXcoord) : SV_TARGET
 {
+	// normalize the mesh normal
+	viewNormal = normalize(viewNormal);
     //노맙맵으로부터 매핑
     if(normalMapEnabled)
     {
-        // build the tranform (rotation) into tangent space
-        const float3x3 tanToView = float3x3(
-            normalize(tan),
-            normalize(bitan),
-            normalize(viewNormal)
-        );
-        // unpack the normal from map into tangent space        
-        const float3 normalSample = nmap.Sample(splr, tc).xyz;
-		float3 tanNormal;
-		tanNormal = normalSample * 2.0f - 1.0f;
-		tanNormal.y = -tanNormal.y;
-        // bring normal from tanspace into view space
-		viewNormal = normalize(mul(tanNormal, tanToView));
+         viewNormal = MapNormal(normalize(viewTan), normalize(viewBitan), viewNormal, tc, nmap, splr);
     }
-   //물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
-    const float3 vToL = lightPos - viewPos;
-	//정점부터 광원까지의 거리
-    const float distToL = length(vToL);
-	//정점부터 광원까지의 방향벡터
-    const float3 dirToL = vToL / distToL;
-	//***점광원***//
-    // 빛 감쇄치 정하기
-    const float att = 1.0f / (attConst + attLin * distToL + attQuad * (distToL * distToL));
-	// 빛 강도
-    const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, viewNormal));
-    //************//
-
-    //***정반사***//
-    //빛벡터에 대한 반사벡터
-    const float3 w = viewNormal * dot(vToL, viewNormal);
-    const float3 r = w * 2.0f - vToL;
-    //시야벡터와 빛반사벡터 사이의 각도를 기반으로 정반사의 강도를 제곱수와 함께 구한다
-    const float3 specular = att * (diffuseColor * diffuseIntensity) * specularIntensity * pow(max(0.0f, dot(normalize(-r), normalize(viewPos))), specularPower);
-    //************//
+	// fragment to light vector data
+	const LightVectorData lv = CalculateLightVectorData(viewLightPos, viewFragPos);
+	// attenuation
+	const float att = Attenuate(attConst, attLin, attQuad, lv.distToL);
+	// diffuse
+	const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, lv.dirToL, viewNormal);
+	// specular
+	const float3 specular = Speculate(
+		diffuseColor, diffuseIntensity, viewNormal,
+		lv.vToL, viewFragPos, att, specularPower
+	);
 
 	// 최종 색 (텍스처 기반 색)
     return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specular), 1.0f);
