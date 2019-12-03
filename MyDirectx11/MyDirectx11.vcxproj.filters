@@ -430,5 +430,8 @@
     <FxCompile Include="Transform.hlsl">
       <Filter>98.Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="PhongPSSpec.hlsl">
+      <Filter>98.Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
