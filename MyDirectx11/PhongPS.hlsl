@@ -20,12 +20,6 @@ float4 main(float3 viewFragPos : POSITION, float3 viewNormal : NORMAL, float2 tc
 {
 	viewNormal = normalize(viewNormal);
 	const LightVectorData lv = CalculateLightVectorData(viewLightPos, viewFragPos);
-	//***Á¡±¤¿ø***//
-    // ºû °¨¼âÄ¡ Á¤ÇÏ±â
-    const float  att = 1.0f / (attConst + attLin * distToL + attQuad * (distToL * distToL));
-	// ºû °­µµ
-    const float3 diffuse = diffuseColor * diffuseIntensity * att * max(0.0f, dot(dirToL, viewNormal));
-    //************//
 
     //***Á¤¹Ý»ç***//
 	// attenuation
