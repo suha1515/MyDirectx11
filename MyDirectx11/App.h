@@ -17,13 +17,14 @@
 class App
 {
 public:
-	App();
+	App(const std::string& commandLine = "");
 	int Go();
 	~App();
 private:
 	void DoFrame();
 	void ShowImguiDemoWindow();
 private:
+	std::string commandLine;
 	bool showDemoWindow = false;
 	int x = 0, y = 0;
 	ImguiManager imgui;

@@ -29,7 +29,7 @@ float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float2 tc
 		viewNormal = normalize(mul(objectNormal, (float3x3) modelView));
     }
 	// ºû°è»ê
-	const LightVectorData lv = CaculateLightVectorData(viewLightPos, viewFragPos);
+	const LightVectorData lv = CalculateLightVectorData(viewLightPos, viewFragPos);
 	// ºû°¨¼â
 	const float att = Attenuate(attConst, attLin, attQuad, lv.distToL);
 	// È®»ê±¤ ¼¼±â

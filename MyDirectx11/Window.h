@@ -85,6 +85,6 @@ private:
 	HWND hWnd;
 	std::unique_ptr<Graphics> pGfx;		//그래픽 디바이스
 	std::vector<BYTE> rawBuffer;
-
+	std::string commandLine;
 };
 

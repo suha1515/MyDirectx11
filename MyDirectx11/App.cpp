@@ -7,16 +7,39 @@
 #include "GDIPlusManager.h"
 #include "imgui/imgui.h"
 #include "VertexBuffer.h"
+#include "NormalMapTwerker.h"
 
+//? 일단.. 윈도 커맨드 라인이랑 관련있는헤더..
+// 아마 콘솔창처럼 커맨드를 입력할수있게하는것일듯싶다..
+#include <shellapi.h>
 
 namespace dx = DirectX;
 
 GDIPlusManager gdipm;
 
-App::App()
-	:wnd(1280, 720, "My Window"),
+App::App(const std::string& commandLine)
+	:
+	commandLine(commandLine),
+	wnd(1280, 720, "My Window"),
 	light(wnd.Gfx())
 {
+	// makeshift cli for doing some preprocessing bullshit (so many hacks here)
+	if (this->commandLine != "")
+	{
+		int nArgs;
+		const auto pLineW = GetCommandLineW();
+		const auto pArgs = CommandLineToArgvW(pLineW, &nArgs);
+		if (nArgs >= 4 && std::wstring(pArgs[1]) == L"--ntwerk-rotx180")
+		{
+			const std::wstring pathInWide = pArgs[2];
+			const std::wstring pathOutWide = pArgs[3];
+			NormalMapTwerker::RotateXAxis180(
+				std::string(pathInWide.begin(), pathInWide.end()),
+				std::string(pathOutWide.begin(), pathOutWide.end())
+			);
+			throw std::runtime_error("Normal map processed successfully. Just kidding about that whole runtime error thing.");
+		}
+	}
 	wall.SetRootTransform(dx::XMMatrixTranslation(-1.5f, 0.0f, 0.0f));
 	tp.SetPos({ 12.0f,0.0f,0.0f });
 	gobber.SetRootTransform(dx::XMMatrixTranslation(0.0f, 0.0f, -4.0f));

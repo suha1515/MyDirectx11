@@ -365,6 +365,9 @@
     <ClInclude Include="PointLight.hlsl">
       <Filter>98.Shaders</Filter>
     </ClInclude>
+    <ClInclude Include="NormalMapTwerker.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MyDirectx11.rc">

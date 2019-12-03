@@ -10,7 +10,8 @@ int CALLBACK WinMain(
 {
 	try
 	{
-		return App{}.Go();
+		//여기서 커맨드라인을 입력한다.
+		return App{lpCmdLine}.Go();
 	}
 	catch (const BsException & e)
 	{
