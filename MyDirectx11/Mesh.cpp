@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <sstream>
 #include <filesystem>
+#include "BsXM.h"
 
 namespace dx = DirectX;
 
@@ -123,6 +124,10 @@ void Node::SetAppliedTransform(DirectX::FXMMATRIX transform) noexcept
 {
 	dx::XMStoreFloat4x4(&appliedTransform, transform);
 }
+const DirectX::XMFLOAT4X4& Node::GetAppliedTransform() const noexcept
+{
+	return appliedTransform;
+}
 //자식노드를 추가하는 코드
 void Node::AddChild(std::unique_ptr<Node> pChild) noxnd
 {
@@ -151,7 +156,23 @@ public:
 			root.ShowTree(pSelectedNode);
 			if (pSelectedNode != nullptr)//선택된 노드가 있을경우만 gui 표시
 			{
-				auto& transform = transforms[pSelectedNode->GetId()];
+				const auto id = pSelectedNode->GetId();
+				auto i = transforms.find(id);
+				if (i == transforms.end())
+				{
+					const auto& applied = pSelectedNode->GetAppliedTransform();
+					const auto angles = ExtractEulerAngles(applied);
+					const auto translation = ExtractTranslation(applied);
+					TransformParameters tp;
+					tp.roll = angles.z;
+					tp.pitch = angles.x;
+					tp.yaw = angles.y;
+					tp.x = translation.x;
+					tp.y = translation.y;
+					tp.z = translation.z;
+					std::tie(i, std::ignore) = transforms.insert({ id,tp });
+				}
+				auto& transform = i->second;
 				ImGui::NextColumn();
 				ImGui::Text("Orientation");
 				ImGui::SliderAngle("Roll", &transform.roll, -180.0f, 180.0f);
