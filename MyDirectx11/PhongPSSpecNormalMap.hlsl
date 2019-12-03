@@ -1,5 +1,7 @@
 #include "ShaderOps.hlsl"
+#include "LightVectorData.hlsl"
 #include "PointLight.hlsl" 
+
 
 //오브젝트 고유의 색과 빛나는정도를 정한다.
 cbuffer ObjectCBuf
@@ -19,7 +21,7 @@ Texture2D nmap;
 
 SamplerState splr;
 
-float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 viewTan : Tangent, float3 viewBitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
+float4 main(float3 viewFragPos : Position, float3 viewNormal : Normal, float3 viewTan : Tangent, float3 viewBitan : Bitangent, float2 tc : Texcoord) : SV_TARGET
 {
 	//메쉬 노멀 정규화
 	viewNormal = normalize(viewNormal);
@@ -28,12 +30,7 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 viewTa
     {
 		viewNormal = MapNormal(normalize(viewTan), normalize(viewBitan), viewNormal, tc, nmap, splr);
     }
-	//물체의 조각 (정점) 에서  광원으로의 벡터(단위x)
-    const float3 viewFragToL = viewLightPos - viewPos;
-	//정점부터 광원까지의 거리
-    const float distFragToL = length(viewFragToL);
-	//정점부터 광원까지의 방향벡터
-    const float3 viewDirFragToL = viewFragToL / distFragToL;
+	const LightVectorData lv = CalculateLightVectorData(viewLightPos, viewFragPos);
 
     //시선벡터와 반사벡터사이의 각에 기반하여 정반사 강도를 구한다.
     float3 specularReflectionColor;
@@ -56,11 +53,11 @@ float4 main(float3 viewPos : Position, float3 viewNormal : Normal, float3 viewTa
         specularReflectionColor = specularColor;
     }
 	//빛감쇄
-	const float att = Attenuate(attConst, attLin, attQuad, distFragToL);
+	const float att = Attenuate(attConst, attLin, attQuad, lv.distToL);
 	// 확산광
-	const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, viewDirFragToL, viewNormal);
+	const float3 diffuse = Diffuse(diffuseColor, diffuseIntensity, att, lv.dirToL, viewNormal);
 	// 정반사
-	const float3 specularReflected = Speculate(specularReflectionColor, 1.0f, viewNormal, viewFragToL, viewPos, att, specularPower);
+	const float3 specularReflected = Speculate(specularReflectionColor, 1.0f, viewNormal, lv.vToL, viewFragPos, att, specularPower);
 	//최종색 = 감쇄된 색상 + 텍스쳐색상에의한 주변광 +정반사광
     return float4(saturate((diffuse + ambient) * tex.Sample(splr, tc).rgb + specularReflected * specularReflectionColor), 1.0f);
 }
